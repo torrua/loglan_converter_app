@@ -89,7 +89,7 @@ def _db_link_affixes(words: List[List[str]]) -> None:
         using function convert_file_to_list
     :return: None
     """
-    log.debug("Start to link words with their affixes")
+    log.info("Start to link words with their affixes")
 
     prim_types = db.session.query(Type.id).filter(Type.group == "Prim").all()
     afx_types = db.session.query(Type.id).filter(Type.type == "Afx").all()
@@ -116,7 +116,7 @@ def _db_link_affixes(words: List[List[str]]) -> None:
             affix_names = [prim.add_child(djifoa) for djifoa in djifoas_as_object]
             log.debug("%s < %s", prim.name, affix_names)
         db.session.commit()
-    log.debug("Finish to link words with their affixes")
+    log.info("Finish to link words with their affixes")
 
 
 def _db_link_keys() -> None:
