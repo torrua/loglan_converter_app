@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Module for generating LOD dictionary database"""
-
+import time
+from datetime import timedelta
 from import_database import db, DEFAULT_LANGUAGE, log
 from import_database.db_functions_link import db_link_tables
 from import_database.db_functions_fill import db_fill_tables
@@ -17,18 +18,22 @@ def db_recreate_db() -> None:
     :return: None
     """
 
-    log.debug("Start DB creation")
-    log.debug("Drop all existing tables in DB")
+    log.info("START DB CREATION")
+    start_time = time.monotonic()
+
+    log.info("MILESTONE: Drop all existing tables in DB")
     db.drop_all()
 
-    log.debug("Create all new tables in DB")
+    log.info("MILESTONE: Create all new tables in DB")
     db.create_all()
 
-    log.debug("Fill tables in new DB")
+    log.info("MILESTONE: Fill tables in new DB")
     db_fill_tables(DEFAULT_LANGUAGE)
-    log.debug("Link data between tables")
+    log.info("MILESTONE: Link data between tables")
     db_link_tables()
-    log.debug("Finish DB creation")
+
+    log.info("FINISH DB CREATION")
+    log.info("ELAPSED TIME IN MINUTES: %s", timedelta(minutes=time.monotonic() - start_time))
 
 
 if __name__ == "__main__":

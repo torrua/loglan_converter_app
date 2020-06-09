@@ -20,15 +20,14 @@ def add_objects_to_db(model: str, converter, data: tuple) -> None:
     :param data: Data imported from text file
     :return: None
     """
-    log.debug("Start to process %s objects", model)
+    log.info("Start to process %s objects", model)
     objects = converter(*data)
-    log.debug("Total number of %s objects - %s",
-              model, len(objects))
-    log.debug("Add %s objects to Database", model)
+    log.info("Total number of %s objects - %s", model, len(objects))
+    log.info("Add %s objects to Database", model)
     db.session.bulk_save_objects(objects)
     log.debug("Commit Database changes")
     db.session.commit()
-    log.debug("Finish to process %s objects\n", model)
+    log.info("Finish to process %s objects\n", model)
 
 
 def db_fill_tables(language: str) -> None:
@@ -41,7 +40,7 @@ def db_fill_tables(language: str) -> None:
     :param language:
     :return: None
     """
-    log.debug("Start to fill tables with dictionary data")
+    log.info("Start to fill tables with dictionary data")
 
     models = (Author, Event, Key, Setting, Syllable, Type, Word, Definition, )
 
@@ -61,4 +60,4 @@ def db_fill_tables(language: str) -> None:
     for model, converter, data in zip(models, converters, data_sets_for_converters):
         add_objects_to_db(model.__name__, converter, data)
 
-    log.debug("Finish to fill tables with dictionary data\n")
+    log.info("Finish to fill tables with dictionary data\n")
