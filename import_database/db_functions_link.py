@@ -21,7 +21,7 @@ def _db_link_authors(words: List[List[str]]) -> None:
         using function convert_file_to_list
     :return: None
     """
-    log.debug("Start to link words with their authors")
+    log.info("Start to link words with their authors")
 
     all_authors = Author.query.all()
     author_by_abbr = {author.abbreviation: author for author in all_authors}
@@ -30,12 +30,10 @@ def _db_link_authors(words: List[List[str]]) -> None:
     dict_of_authors_data_as_dict = {
         int(word_data[0]): word_data[5].split(" ", 1)[0].split("/")
         for word_data in words}
-    from pprint import pprint
-    pprint(dict_of_authors_data_as_dict)
 
     for word in Word.query.all():
         authors_abbreviations = dict_of_authors_data_as_dict[word.id_old]
-        print(word) if not authors_abbreviations else None
+        # print(word) if not authors_abbreviations else None
 
         abbreviations = [
             word.add_author(author_by_abbr[abbreviation])
@@ -43,6 +41,7 @@ def _db_link_authors(words: List[List[str]]) -> None:
         log_text = f"{word.name} {' '*(26-len(word.name))}-> {'/'.join(abbreviations)}"
         log.debug(log_text)
     db.session.commit()
+    log.info("Finish to link words with their authors")
 
 
 def _db_link_complexes(words: List[List[str]]) -> None:
@@ -56,7 +55,7 @@ def _db_link_complexes(words: List[List[str]]) -> None:
     :return: None
     """
 
-    log.debug("Start to create relations between primitives and their derivatives")
+    log.info("Start to create relations between primitives and their derivatives")
 
     def get_elements_from_str(set_as_str: str, separator: str = " | ") -> list:
         return [element.strip() for element in set_as_str.split(separator)]
@@ -79,8 +78,8 @@ def _db_link_complexes(words: List[List[str]]) -> None:
             # TODO There are unspecified words, for example, <zvovai>
             log_text = f"{parent.name} {' ' * (26 - len(parent.name))}-> {child_names}"
             log.debug(log_text)
-        db.session.commit()
-    log.debug("Finish to create relations between primitives and their derivatives")
+    db.session.commit()
+    log.info("Finish to create relations between primitives and their derivatives")
 
 
 def _db_link_affixes(words: List[List[str]]) -> None:
@@ -125,7 +124,7 @@ def _db_link_keys() -> None:
     # Create relations in DB between definitions and their keys
     :return: None
     """
-    log.debug("Start to link definitions with their keys")
+    log.info("Start to link definitions with their keys")
     pattern = r"(?<=\«)(.+?)(?=\»)"
     all_definitions = Definition.query.all()
     for definition in all_definitions:
@@ -134,7 +133,7 @@ def _db_link_keys() -> None:
         key_objects = Key.query.filter(Key.word.in_(keys)).all()
         _ = [definition.add_key(key) for key in key_objects]
     db.session.commit()
-    log.debug("Finish to link definitions with their keys")
+    log.info("Finish to link definitions with their keys")
 
 
 def db_link_tables() -> None:
@@ -150,10 +149,10 @@ def db_link_tables() -> None:
     :return: None
     """
 
-    log.debug("Start to link tables data")
+    log.info("Start to link tables data")
     imported_words = download_dictionary_file("Word", SEPARATOR)
     _db_link_authors(imported_words)
     _db_link_complexes(imported_words)
     _db_link_affixes(imported_words)
     _db_link_keys()
-    log.debug("Finish to link tables data")
+    log.info("Finish to link tables data")

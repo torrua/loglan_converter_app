@@ -10,6 +10,6 @@ import logging
 logging.basicConfig(
     format='%(filename)s [LINE:%(lineno)d]\t[%(asctime)s] '
            '%(levelname)-s\t%(funcName)s() \t\t%(message)s',
-    level=logging.DEBUG,
+    level=logging.INFO,
     datefmt="%y-%m-%d %H:%M:%S")
 log = logging.getLogger(__name__)
