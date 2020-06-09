@@ -91,9 +91,6 @@ def _db_link_affixes(words: List[List[str]]) -> None:
     """
     log.info("Start to link words with their affixes")
 
-    prim_types = db.session.query(Type.id).filter(Type.group == "Prim").all()
-    afx_types = db.session.query(Type.id).filter(Type.type == "Afx").all()
-
     def get_elements_from_str(set_as_str: str, separator: str = " ") -> list:
         return [element.strip() for element in set_as_str.split(separator)]
 
@@ -101,21 +98,21 @@ def _db_link_affixes(words: List[List[str]]) -> None:
         if not item[3]:
             continue
 
-        # there may be several parents if these are a language-people-culture primitives
-        primitives = Word.query \
-            .filter(Word.id_old == int(item[0])) \
-            .filter(Word.type_id.in_(prim_types)).all()
-
         djifoas_as_str = get_elements_from_str(item[3])
 
-        djifoas_as_object = Word.query\
-            .filter(Word.name.in_(djifoas_as_str))\
-            .filter(Word.type_id.in_(afx_types)).all()
+        djifoas_as_object = Word.query.join(Type) \
+            .filter(Word.name.in_(djifoas_as_str)) \
+            .filter(Type.type == "Afx").all()
+
+        # there may be several parents if these are a language-people-culture primitives
+        primitives = Word.query.join(Type) \
+            .filter(Word.id_old == int(item[0])) \
+            .filter(Type.group == "Prim").all()
 
         for prim in primitives:
             affix_names = [prim.add_child(djifoa) for djifoa in djifoas_as_object]
             log.debug("%s < %s", prim.name, affix_names)
-        db.session.commit()
+    db.session.commit()
     log.info("Finish to link words with their affixes")
 
 
