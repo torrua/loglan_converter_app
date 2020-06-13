@@ -26,14 +26,13 @@ def _db_link_authors(words: List[List[str]]) -> None:
     all_authors = Author.query.all()
     author_by_abbr = {author.abbreviation: author for author in all_authors}
 
-    # Get a dictionary with a list of abbreviations of authors of each word by key WID_old
+    # Get a dictionary with a list of abbreviations of authors of each word by id_old
     dict_of_authors_data_as_dict = {
         int(word_data[0]): word_data[5].split(" ", 1)[0].split("/")
         for word_data in words}
 
     for word in Word.query.all():
         authors_abbreviations = dict_of_authors_data_as_dict[word.id_old]
-        # print(word) if not authors_abbreviations else None
 
         abbreviations = [
             word.add_author(author_by_abbr[abbreviation])

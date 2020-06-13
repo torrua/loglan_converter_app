@@ -2,12 +2,10 @@
 """"
 Module for adding dictionary data to the database
 """
-from import_database import Author, Event, Definition, Setting, Syllable, Type, Word, Key, WordSpell
-from import_database import db, log, SEPARATOR
+from import_database import Author, Event, Definition, Setting, Syllable, Type, Word, WordSpell
+from import_database import db, log, SEPARATOR, models
 
-from import_database.db_functions_convert import converter_authors, \
-    converter_events, converter_keys, converter_settings, converter_syllables, \
-    converter_types, converter_words, converter_definitions
+from import_database.db_functions_convert import converters
 
 from import_database.db_functions_import import download_dictionary_file
 
@@ -41,11 +39,6 @@ def db_fill_tables(language: str) -> None:
     :return: None
     """
     log.info("Start to fill tables with dictionary data")
-
-    models = (Author, Event, Key, Setting, Syllable, Type, Word, Definition, )
-
-    converters = (converter_authors, converter_events, converter_keys, converter_settings,
-                  converter_syllables, converter_types, converter_words, converter_definitions, )
 
     data_sets_for_converters = (
         (download_dictionary_file(Author.__name__),),

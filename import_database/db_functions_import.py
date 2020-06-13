@@ -37,3 +37,16 @@ def download_dictionary_file(model: str, separator: str = SEPARATOR) -> List[Lis
     log.debug("Finish to get '%s' content", model)
 
     return [file_line.strip().split(separator) for file_line in lines if file_line]
+
+
+def db_get_statistic(db_models: list):
+    """
+
+    :param db_models:
+    :return:
+    """
+    # TODO
+    log.info("Start to get statistic of imported items:")
+    for model in db_models:
+        log.info(f"{model.__name__}: {model.query.count()}")
+    log.info("Finish to get statistic of imported items")
