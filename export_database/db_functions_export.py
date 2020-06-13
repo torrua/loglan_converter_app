@@ -49,11 +49,11 @@ def export_to_file(data_object, file_path: str, extractor) -> None:
     if attr:
         collection = data_object.query.order_by(data_object.id_old.asc()).all()
     else:
-        collection = data_object.query.all()
+        collection = data_object.query.order_by(data_object.id.asc()).all()
 
     log.debug("%s items imported from database", len(collection))
     log.debug("Preparing imported items to export")
-    elements = sorted(extractor(collection))
+    elements = extractor(collection)
     log.debug("%s unique items ready to export", len(elements))
 
     all_items = []
