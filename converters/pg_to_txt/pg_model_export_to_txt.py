@@ -4,7 +4,7 @@ Export extensions of LOD database models
 Add export() function to db object for returning its text string presentation
 """
 
-from export_database import Author, Event, Syllable, Setting, Type, Word, Definition
+from config.postgres.model_dictionary import Author, Event, Syllable, Setting, Type, Word, Definition
 
 
 class ExportAuthor(Author):
@@ -21,7 +21,7 @@ class ExportEvent(Event):
 
 class ExportSyllable(Syllable):
     def export(self):
-        return f"{self.name}"
+        return f"{self.name}@{self.type}@{self.allowed}"
 
 
 class ExportSetting(Setting):
@@ -43,7 +43,7 @@ class ExportWord(Word):
         notes = self.notes if self.notes else {}
 
         w_affixes = self.get_afx()
-        affixes = ' '.join(sorted([afx.name for afx in w_affixes])) if w_affixes else ""
+        affixes = ' '.join(sorted({afx.name.replace("-", "") for afx in w_affixes})) if w_affixes else ""
 
         w_match = self.match
         match = w_match if w_match else ""
@@ -59,16 +59,26 @@ class ExportWord(Word):
         rank = self.rank + (" " + notes["rank"] if notes.get("rank", False) else "")
 
         w_usedin = self.get_cpx()
-        usedin = ' | '.join(sorted([cpx.name for cpx in w_usedin])) if w_usedin else ""
+        usedin = ' | '.join(sorted({cpx.name for cpx in w_usedin})) if w_usedin else ""
 
         tid_old = self.TID_old if self.TID_old else ""
-
+        origin_x = self.origin_x if self.origin_x else ""
+        origin = self.origin if self.origin else ""
         return f"{self.id_old}@{self.type.type}@{self.type.type_x}@{affixes}" \
                f"@{match}@{source}@{year}@{rank}" \
-               f"@{self.origin}@{self.origin_x}@{usedin}@{tid_old}"
+               f"@{origin}@{origin_x}@{usedin}@{tid_old}"
 
-    @property
-    def export_spell_as_string(self) -> str:
+
+class ExportDefinition(Definition):
+    def export(self):
+        return f"{self.source_word.id_old}@{self.position}@{self.usage if self.usage else ''}" \
+               f"@{self.slots if self.slots else ''}" \
+               f"{self.grammar_code if self.grammar_code else ''}" \
+               f"@{self.body}@@{self.case_tags if self.case_tags else ''}"
+
+
+class ExportWordSpell(Word):
+    def export(self):
         """
         Prepare Word Spell data for exporting to text file
         :return: Formatted basic string
@@ -79,9 +89,6 @@ class ExportWord(Word):
                f"@{self.event_start_id}@{self.event_end_id if self.event_end else 9999}@"
 
 
-class ExportDefinition(Definition):
-    def export(self):
-        return f"{self.source_word.id_old}@{self.position}@{self.usage}" \
-               f"@{self.slots if self.slots else ''}" \
-               f"{self.grammar_code if self.grammar_code else ''}" \
-               f"@{self.body}@@{self.case_tags}"
+export_models_pg = (
+    ExportAuthor, ExportDefinition, ExportEvent, ExportSetting,
+    ExportSyllable, ExportType, ExportWordSpell, ExportWord, )

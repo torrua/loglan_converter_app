@@ -6,13 +6,13 @@ Module for creating database relationships
 
 import re
 from typing import List
+from converters.txt_to_pg.txt_to_pg_functions_import import download_dictionary_file
+from config.postgres import db
+from config import log, SEPARATOR
+from config.postgres.model_dictionary import Author, Definition, Type, Word, Key
 
-from import_database import db, log, SEPARATOR
-from import_database import Author, Word, Type, Definition, Key
-from import_database.db_functions_import import download_dictionary_file
 
-
-def _db_link_authors(words: List[List[str]]) -> None:
+def db_link_authors(words: List[List[str]]) -> None:
     """
     Create relations between words and their authors (WID <-> AID) in DB
     These connections locate in 't_connect_authors' table
@@ -43,7 +43,7 @@ def _db_link_authors(words: List[List[str]]) -> None:
     log.info("Finish to link words with their authors")
 
 
-def _db_link_complexes(words: List[List[str]]) -> None:
+def db_link_complexes(words: List[List[str]]) -> None:
     """
     Create relations in DB between -
         primitives and derivative complexes,
@@ -75,13 +75,14 @@ def _db_link_complexes(words: List[List[str]]) -> None:
 
             child_names = [parent.add_child(child) for child in children if child]
             # TODO There are unspecified words, for example, <zvovai>
+
             log_text = f"{parent.name} {' ' * (26 - len(parent.name))}-> {child_names}"
             log.debug(log_text)
     db.session.commit()
     log.info("Finish to create relations between primitives and their derivatives")
 
 
-def _db_link_affixes(words: List[List[str]]) -> None:
+def db_link_affixes(words: List[List[str]]) -> None:
     """
     Create relations in DB between primitives and their affixes
     :param words: List of words' data received from a text file
@@ -98,9 +99,11 @@ def _db_link_affixes(words: List[List[str]]) -> None:
             continue
 
         djifoas_as_str = get_elements_from_str(item[3])
+        djifoas_as_str_with_hyphen = [f"{affix}-" for affix in djifoas_as_str]
+        djifoas = djifoas_as_str + djifoas_as_str_with_hyphen
 
         djifoas_as_object = Word.query.join(Type) \
-            .filter(Word.name.in_(djifoas_as_str)) \
+            .filter(Word.name.in_(djifoas)) \
             .filter(Type.type == "Afx").all()
 
         # there may be several parents if these are a language-people-culture primitives
@@ -115,7 +118,7 @@ def _db_link_affixes(words: List[List[str]]) -> None:
     log.info("Finish to link words with their affixes")
 
 
-def _db_link_keys() -> None:
+def db_link_keys() -> None:
     """
     # Create relations in DB between definitions and their keys
     :return: None
@@ -132,7 +135,7 @@ def _db_link_keys() -> None:
     log.info("Finish to link definitions with their keys")
 
 
-def db_link_tables() -> None:
+def db_link_tables(words_dataset) -> None:
     """
     Link existing data between tables. For example,
         connect Word objects with Author object(s)
@@ -146,9 +149,12 @@ def db_link_tables() -> None:
     """
 
     log.info("Start to link tables data")
-    imported_words = download_dictionary_file("Word", SEPARATOR)
-    _db_link_authors(imported_words)
-    _db_link_complexes(imported_words)
-    _db_link_affixes(imported_words)
-    _db_link_keys()
+    db_link_authors(words_dataset)
+    db_link_complexes(words_dataset)
+    db_link_affixes(words_dataset)
+    db_link_keys()
     log.info("Finish to link tables data")
+
+
+def get_word_dataset() -> list:
+    return download_dictionary_file("Word", SEPARATOR)

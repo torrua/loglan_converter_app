@@ -7,8 +7,8 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import List, Set
-
-from app import db
+from sqlalchemy.ext.declarative import declared_attr
+from config.postgres import db
 
 # pylint: disable=R0903, E1101, C0103
 
@@ -28,28 +28,49 @@ t_name_word_spells = "word_spells"
 
 t_connect_authors = db.Table(
     'connect_authors', db.metadata,
-    db.Column('AID', db.ForeignKey('author.id'), primary_key=True),
-    db.Column('WID', db.ForeignKey('word.id'), primary_key=True), )
+    db.Column('AID', db.ForeignKey(f'{t_name_authors}.id'), primary_key=True),
+    db.Column('WID', db.ForeignKey(f'{t_name_words}.id'), primary_key=True), )
 
 t_connect_words = db.Table(
     'connect_words', db.metadata,
-    db.Column('parent_id', db.ForeignKey('word.id'), primary_key=True),
-    db.Column('child_id', db.ForeignKey('word.id'), primary_key=True), )
+    db.Column('parent_id', db.ForeignKey(f'{t_name_words}.id'), primary_key=True),
+    db.Column('child_id', db.ForeignKey(f'{t_name_words}.id'), primary_key=True), )
 
 
 t_connect_keys = db.Table(
     'connect_keys', db.metadata,
-    db.Column('KID', db.ForeignKey('key.id'), primary_key=True),
-    db.Column('DID', db.ForeignKey('definition.id'), primary_key=True), )
+    db.Column('KID', db.ForeignKey(f'{t_name_keys}.id'), primary_key=True),
+    db.Column('DID', db.ForeignKey(f'{t_name_definitions}.id'), primary_key=True), )
 
 
 class BaseFunctions:
     """
     Base class for common methods
     """
+    __tablename__ = None
+    __index_sort_import__ = None
+    __index_sort_export__ = None
+    __import_from_txt__ = 1
+    __export_to_txt__ = 1
 
     created = db.Column(db.TIMESTAMP, default=datetime.now(), nullable=False)
     updated = db.Column(db.TIMESTAMP, onupdate=db.func.now())
+
+    @classmethod
+    @declared_attr
+    def import_file_name(cls):
+        """
+        :return:
+        """
+        return f"{cls.__tablename__}.txt"
+
+    @classmethod
+    @declared_attr
+    def export_file_name(cls):
+        """
+        :return:
+        """
+        return f"PG_{datetime.now().strftime('%y%m%d%H%M')}_{cls.__tablename__}.txt"
 
     def __repr__(self) -> str:
         return str(self.__dict__)
@@ -146,7 +167,9 @@ class Author(BaseFunctions, db.Model):
     """
     Author model
     """
-    __Tablename__ = t_name_authors
+    __tablename__ = t_name_authors
+    __index_sort_import__ = 1
+    __index_sort_export__ = 1
 
     id = db.Column(db.Integer, primary_key=True)
     abbreviation = db.Column(db.String(256), unique=True, nullable=False)
@@ -158,7 +181,10 @@ class Event(BaseFunctions, db.Model):
     """
     Event model
     """
-    __Tablename__ = t_name_events
+    __tablename__ = t_name_events
+    __index_sort_import__ = 3
+    __index_sort_export__ = 3
+
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
     name = db.Column(db.Text, nullable=False)
@@ -171,7 +197,11 @@ class Key(BaseFunctions, db.Model):
     """
     Key model
     """
-    __Tablename__ = t_name_keys
+    __tablename__ = t_name_keys
+    __index_sort_import__ = None
+    __index_sort_export__ = 8
+    __export_to_txt__ = False
+
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(256), unique=True, nullable=False)
     language = db.Column(db.String(256))
@@ -181,10 +211,12 @@ class Setting(BaseFunctions, db.Model):
     """
     Setting model
     """
-    __Tablename__ = t_name_settings
+    __tablename__ = t_name_settings
+    __index_sort_import__ = 4
+    __index_sort_export__ = 4
 
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, nullable=True)
+    date = db.Column(db.DateTime, nullable=True)
     db_version = db.Column(db.Integer, nullable=False)
     last_word_id = db.Column(db.Integer, nullable=False)
 
@@ -193,18 +225,23 @@ class Syllable(BaseFunctions, db.Model):
     """
     Syllable model
     """
-    __Tablename__ = t_name_syllables
+    __tablename__ = t_name_syllables
+    __index_sort_import__ = 5
+    __index_sort_export__ = 5
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, nullable=False)
     type = db.Column(db.Text, nullable=False)
+    allowed = db.Column(db.Boolean)
 
 
 class Type(BaseFunctions, db.Model):
     """
     Type model
     """
-    __Tablename__ = t_name_types
+    __tablename__ = t_name_types
+    __index_sort_import__ = 6
+    __index_sort_export__ = 6
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Text, nullable=False)
@@ -217,10 +254,12 @@ class Definition(BaseFunctions, db.Model):
     """
     Definition model
     """
-    __Tablename__ = t_name_definitions
+    __tablename__ = t_name_definitions
+    __index_sort_import__ = 2
+    __index_sort_export__ = 2
 
     id = db.Column(db.Integer, primary_key=True)
-    word_id = db.Column(db.Integer, db.ForeignKey('word.id'), nullable=False)
+    word_id = db.Column(db.Integer, db.ForeignKey(f'{t_name_words}.id'), nullable=False)
     position = db.Column(db.Integer, nullable=False)
     usage = db.Column(db.Text)
     grammar_code = db.Column(db.Text)
@@ -250,7 +289,9 @@ class Word(BaseFunctions, db.Model):
     """
     Word model
     """
-    __Tablename__ = t_name_words
+    __tablename__ = t_name_words
+    __index_sort_import__ = 8
+    __index_sort_export__ = 8
 
     id = db.Column(db.Integer, primary_key=True)
     id_old = db.Column(db.Integer, nullable=False)  # Compatibility with the previous database
@@ -258,14 +299,14 @@ class Word(BaseFunctions, db.Model):
     origin = db.Column(db.String(256))
     origin_x = db.Column(db.String(256))
 
-    type_id = db.Column("type", db.ForeignKey('type.id'), nullable=False)
+    type_id = db.Column("type", db.ForeignKey(f'{t_name_types}.id'), nullable=False)
     type = db.relationship(Type.__name__, backref="words")
 
-    event_start_id = db.Column("event_start", db.ForeignKey("event.id"), nullable=False)
+    event_start_id = db.Column("event_start", db.ForeignKey(f'{t_name_events}.id'), nullable=False)
     event_start = db.relationship(
         "Event", foreign_keys=[event_start_id], backref="appeared_words")
 
-    event_end_id = db.Column("event_end", db.ForeignKey("event.id"))
+    event_end_id = db.Column("event_end", db.ForeignKey(f'{t_name_events}.id'))
     event_end = db.relationship(
         "Event", foreign_keys=[event_end_id], backref="deprecated_words")
 
@@ -394,12 +435,16 @@ class Word(BaseFunctions, db.Model):
 
 class WordSpell(BaseFunctions):
     """WordSpell model"""
-    __Tablename__ = t_name_word_spells
+    __tablename__ = t_name_word_spells
+    __index_sort_import__ = 7
+    __index_sort_export__ = 7
+    __import_from_txt__ = False
 
 
-class XWord(BaseFunctions):
-    """XWord model"""
-    __Tablename__ = t_name_x_words
+models_pg = sorted(
+    [model for model in BaseFunctions.__subclasses__()
+     if getattr(model, "__import_from_txt__", False)],
+    key=lambda model: model.__index_sort_export__)
 
 
 if __name__ == "__main__":

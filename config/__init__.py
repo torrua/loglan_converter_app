@@ -12,4 +12,9 @@ logging.basicConfig(
            '%(levelname)-s\t%(funcName)s() \t\t%(message)s',
     level=logging.INFO,
     datefmt="%y-%m-%d %H:%M:%S")
+
 log = logging.getLogger(__name__)
+
+EN = "en"
+DEFAULT_LANGUAGE = EN
+SEPARATOR = "@"

@@ -7,9 +7,9 @@ import ast
 import re
 from datetime import datetime
 from typing import List
-
-from import_database import Author, Event, Definition, Setting, Syllable, Type, Word, Key
-from import_database import log
+from config import log
+from config.postgres.model_dictionary import Author, Event, \
+    Definition, Setting, Syllable, Type, Word, Key
 
 
 def converter_authors(authors: List[List[str]]) -> List[Author]:
@@ -57,19 +57,17 @@ def converter_settings(settings: List[List[str]]) -> List[Setting]:
     }) for item in settings]
 
 
-def converter_syllables(
-        syllables: List[List[str]],
-        s_type: str = "PermissibleInitialCC") -> List[Syllable]:
+def converter_syllables(syllables: List[List[str]]) -> List[Syllable]:
     """
     Convert syllables' data to DB objects
     :param syllables: List of syllables received from a text file
         using function convert_file_to_list
-    :param s_type: Type of syllables
     :return: List of Syllable object(s)
     """
     return [Syllable({
         "name": item[0],
-        "type": s_type,
+        "type": item[1],
+        "allowed": ast.literal_eval(item[2]),
     }) for item in syllables]
 
 
