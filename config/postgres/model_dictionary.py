@@ -2,7 +2,6 @@
 """
 Models of LOD database
 """
-
 from __future__ import annotations
 
 from datetime import datetime
@@ -50,27 +49,20 @@ class BaseFunctions:
     __tablename__ = None
     __index_sort_import__ = None
     __index_sort_export__ = None
-    __import_from_txt__ = 1
-    __export_to_txt__ = 1
+    __load_from_file__ = True
+    __load_to_db__ = True
+
+    import_file_name = None
 
     created = db.Column(db.TIMESTAMP, default=datetime.now(), nullable=False)
     updated = db.Column(db.TIMESTAMP, onupdate=db.func.now())
 
-    @classmethod
-    @declared_attr
-    def import_file_name(cls):
-        """
-        :return:
-        """
-        return f"{cls.__tablename__}.txt"
-
-    @classmethod
     @declared_attr
     def export_file_name(cls):
         """
         :return:
         """
-        return f"PG_{datetime.now().strftime('%y%m%d%H%M')}_{cls.__tablename__}.txt"
+        return f"PG_{datetime.now().strftime('%y%m%d%H%M')}_{cls.import_file_name}"
 
     def __repr__(self) -> str:
         return str(self.__dict__)
@@ -170,6 +162,7 @@ class Author(BaseFunctions, db.Model):
     __tablename__ = t_name_authors
     __index_sort_import__ = 1
     __index_sort_export__ = 1
+    import_file_name = "Author.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     abbreviation = db.Column(db.String(256), unique=True, nullable=False)
@@ -182,8 +175,9 @@ class Event(BaseFunctions, db.Model):
     Event model
     """
     __tablename__ = t_name_events
-    __index_sort_import__ = 3
+    __index_sort_import__ = 2
     __index_sort_export__ = 3
+    import_file_name = "LexEvent.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
@@ -198,9 +192,10 @@ class Key(BaseFunctions, db.Model):
     Key model
     """
     __tablename__ = t_name_keys
-    __index_sort_import__ = None
+    __index_sort_import__ = 3
     __index_sort_export__ = 8
-    __export_to_txt__ = False
+    __load_from_file__ = False
+    __load_to_db__ = True
 
     id = db.Column(db.Integer, primary_key=True)
     word = db.Column(db.String(256), unique=True, nullable=False)
@@ -214,6 +209,7 @@ class Setting(BaseFunctions, db.Model):
     __tablename__ = t_name_settings
     __index_sort_import__ = 4
     __index_sort_export__ = 4
+    import_file_name = "Settings.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.DateTime, nullable=True)
@@ -228,6 +224,7 @@ class Syllable(BaseFunctions, db.Model):
     __tablename__ = t_name_syllables
     __index_sort_import__ = 5
     __index_sort_export__ = 5
+    import_file_name = "Syllable.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.Text, nullable=False)
@@ -242,6 +239,7 @@ class Type(BaseFunctions, db.Model):
     __tablename__ = t_name_types
     __index_sort_import__ = 6
     __index_sort_export__ = 6
+    import_file_name = "Type.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     type = db.Column(db.Text, nullable=False)
@@ -255,8 +253,9 @@ class Definition(BaseFunctions, db.Model):
     Definition model
     """
     __tablename__ = t_name_definitions
-    __index_sort_import__ = 2
+    __index_sort_import__ = 8
     __index_sort_export__ = 2
+    import_file_name = "WordDefinition.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     word_id = db.Column(db.Integer, db.ForeignKey(f'{t_name_words}.id'), nullable=False)
@@ -290,8 +289,9 @@ class Word(BaseFunctions, db.Model):
     Word model
     """
     __tablename__ = t_name_words
-    __index_sort_import__ = 8
+    __index_sort_import__ = 7
     __index_sort_export__ = 8
+    import_file_name = "Words.txt"
 
     id = db.Column(db.Integer, primary_key=True)
     id_old = db.Column(db.Integer, nullable=False)  # Compatibility with the previous database
@@ -436,15 +436,11 @@ class Word(BaseFunctions, db.Model):
 class WordSpell(BaseFunctions):
     """WordSpell model"""
     __tablename__ = t_name_word_spells
-    __index_sort_import__ = 7
+    __index_sort_import__ = 9
     __index_sort_export__ = 7
-    __import_from_txt__ = False
-
-
-models_pg = sorted(
-    [model for model in BaseFunctions.__subclasses__()
-     if getattr(model, "__import_from_txt__", False)],
-    key=lambda model: model.__index_sort_export__)
+    import_file_name = "WordSpell.txt"
+    __load_from_file__ = True
+    __load_to_db__ = False
 
 
 if __name__ == "__main__":

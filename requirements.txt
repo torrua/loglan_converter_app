@@ -5,3 +5,5 @@ psycopg2>=2.8.5
 requests>=2.24.0
 sqlalchemy-access>=1.0.6
 pywin32
+pyinstaller
+pyodbc

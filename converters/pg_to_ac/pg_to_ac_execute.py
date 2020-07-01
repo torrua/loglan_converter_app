@@ -10,7 +10,7 @@ from converters.pg_to_txt.pg_model_export_to_txt import export_models_pg
 from converters.pg_to_txt.pg_to_txt_execute import convert_model_to_txt
 from converters.txt_to_ac.txt_to_ac_execute import db_backup_file, \
     db_clear_content, db_compress_file
-from converters.txt_to_ac.txt_to_ac_functions_convert import converters
+from converters.txt_to_ac.txt_to_ac_functions_convert import converters_ac
 
 
 def get_data_from_schema():
@@ -19,7 +19,7 @@ def get_data_from_schema():
     :return:
     """
     log.info("Starting to export data from db")
-    convert_schema = zip(export_models_pg, converters)
+    convert_schema = zip(export_models_pg, converters_ac)
     # TODO Add logging
     for export_model, converter in convert_schema:
         log.info("Starting %s export", export_model.__name__)
@@ -67,3 +67,7 @@ def convert_pg_to_ac(db_path: str = AC_PATH) -> None:
 
     db_get_statistic()
     log.info("FINISH DB CREATION")
+
+
+if __name__ == "__main__":
+    convert_pg_to_ac()

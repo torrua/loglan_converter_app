@@ -91,4 +91,4 @@ class ExportWordSpell(Word):
 
 export_models_pg = (
     ExportAuthor, ExportDefinition, ExportEvent, ExportSetting,
-    ExportSyllable, ExportType, ExportWordSpell, ExportWord, )
+    ExportSyllable, ExportType, ExportWord, ExportWordSpell, )

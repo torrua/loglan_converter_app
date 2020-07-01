@@ -1,4 +1,5 @@
 from sqlalchemy import Column, String, Integer, Text, Boolean, DateTime, UnicodeText
+
 from config.access import Base
 from sqlalchemy.ext.declarative import declared_attr
 from datetime import datetime
@@ -10,12 +11,10 @@ class BaseFunctions:
     """
     __tablename__ = None
 
-    @classmethod
     @declared_attr
     def import_file_name(cls):
         return f"{cls.__tablename__}.txt"
 
-    @classmethod
     @declared_attr
     def export_file_name(cls):
         return f"AC_{datetime.now().strftime('%y%m%d%H%M')}_{cls.__tablename__}.txt"
@@ -37,13 +36,25 @@ class AccessAuthor(Base, BaseFunctions):
     Author model
     """
     __tablename__ = "Author"
-
     sort_name = "Author"
 
     id = Column(Integer, primary_key=True)
     abbreviation = Column(String(64), unique=True, nullable=False)
     full_name = Column(String(255))
     notes = Column(String(255))
+
+
+class AccessDefinition(Base, BaseFunctions):
+    __tablename__ = 'WordDefinition'
+    sort_name = "Definition"
+
+    word_id = Column("WID", Integer, primary_key=True)
+    position = Column("I", Integer, primary_key=True)
+    usage = Column("Usage", String(255))
+    grammar = Column("Grammar", String(255))
+    body = Column("Definition", UnicodeText, nullable=False)
+    main = Column("Main", String(255))
+    case_tags = Column("Tags", String(255))
 
 
 class AccessEvent(Base, BaseFunctions):
@@ -100,19 +111,6 @@ class AccessType(Base, BaseFunctions):
     parentable = Column(Boolean, nullable=False)
 
 
-class AccessDefinition(Base, BaseFunctions):
-    __tablename__ = 'WordDefinition'
-    sort_name = "Definition"
-
-    word_id = Column("WID", Integer, primary_key=True)
-    position = Column("I", Integer, primary_key=True)
-    usage = Column("Usage", String(255))
-    grammar = Column("Grammar", String(255))
-    body = Column("Definition", UnicodeText, nullable=False)
-    main = Column("Main", String(255))
-    case_tags = Column("Tags", String(255))
-
-
 class AccessWord(Base, BaseFunctions):
     """
     Word model
@@ -161,7 +159,3 @@ class AccessXWord(Base, BaseFunctions):
     I = Column(String)
     XWord = Column(String)
 '''
-
-models_ac = (
-    AccessAuthor, AccessDefinition, AccessEvent, AccessSetting,
-    AccessSyllable, AccessType, AccessWordSpell, AccessWord, )

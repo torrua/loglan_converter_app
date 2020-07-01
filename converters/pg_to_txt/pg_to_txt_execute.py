@@ -8,7 +8,7 @@ Module for uploading data from Postgres database to text files
 from typing import List
 
 from config import log
-from config.text import EXPORT_FILE_PATHS
+from config.postgres import EXPORT_PG_FILE_PATHS_LOCAL
 from config.text.functions import convert_schema_to_txt
 from converters.pg_to_txt.pg_model_export_to_txt import export_models_pg
 
@@ -38,6 +38,10 @@ def convert_model_to_txt(export_model) -> List[str]:
 
 def convert_pg_to_txt():
     """A wrapper for converting an Access database into text files"""
-    export_schema = dict(zip(EXPORT_FILE_PATHS, export_models_pg))
+    export_schema = dict(zip(EXPORT_PG_FILE_PATHS_LOCAL, export_models_pg))
     export_suffix = "PG"
     convert_schema_to_txt(export_schema, convert_model_to_txt, export_suffix)
+
+
+if __name__ == "__main__":
+    convert_pg_to_txt()

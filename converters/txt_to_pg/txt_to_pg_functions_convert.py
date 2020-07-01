@@ -248,6 +248,6 @@ def converter_keys(
     return [Key({"word": key, "language": language, }) for key in unique_keys]
 
 
-converters = (
+converters_pg = (
     converter_authors, converter_events, converter_keys, converter_settings,
     converter_syllables, converter_types, converter_words, converter_definitions, )

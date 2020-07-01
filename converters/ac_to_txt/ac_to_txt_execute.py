@@ -8,9 +8,8 @@ Module for uploading data from Access database to text files
 from typing import List
 
 from config import log
-from config.access import ac_session
+from config.access import ac_session, EXPORT_AC_FILE_PATHS_LOCAL
 from converters.ac_to_txt.ac_model_export_to_txt import export_models_ac
-from config.text import EXPORT_FILE_PATHS
 from config.text.functions import convert_schema_to_txt
 
 # pylint: disable=E1101
@@ -40,6 +39,10 @@ def convert_model_to_txt(export_model) -> List[str]:
 
 def convert_ac_to_txt():
     """A wrapper for converting an Postgres database into text files"""
-    export_schema = dict(zip(EXPORT_FILE_PATHS, export_models_ac))
+    export_schema = dict(zip(EXPORT_AC_FILE_PATHS_LOCAL, export_models_ac))
     export_suffix = "AC"
     convert_schema_to_txt(export_schema, convert_model_to_txt, export_suffix)
+
+
+if __name__ == "__main__":
+    convert_ac_to_txt()

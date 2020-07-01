@@ -10,9 +10,8 @@ from sqlalchemy import MetaData
 
 from config import log
 from config.access import ac_create_engine, MDB_FILE_PATH as AC_PATH, db_get_statistic
+from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 from converters.txt_to_ac.txt_to_ac_functions_fill import db_fill_tables
-
-IMPORT_DIRECTORY_PATH = os.getenv("IMPORT_DIRECTORY_PATH", None)
 
 
 def db_backup_file(db_path, suffix: str = "backup", remove: bool = False):
@@ -56,7 +55,7 @@ def db_compress_file(db_path):
     os.rename(dst_db, db_path)
 
 
-def convert_txt_to_ac(db_path: str = AC_PATH) -> None:
+def convert_txt_to_ac(db_path: str = AC_PATH, source_path: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:
     """
     Complete new db generation. It remove previous db with all data
     and fill the new one with data from txt files
@@ -80,7 +79,7 @@ def convert_txt_to_ac(db_path: str = AC_PATH) -> None:
     db_compress_file(db_path=db_path)
 
     log.info("MILESTONE: Fill tables in new DB")
-    db_fill_tables()
+    db_fill_tables(source_path=source_path)
 
     log.info("MILESTONE: Delete backup")
     db_backup_file(db_path=db_path, remove=True)

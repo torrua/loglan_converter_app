@@ -3,27 +3,34 @@
 Module for adding dictionary data to the database
 """
 
-from converters.txt_to_ac.txt_to_ac_functions_convert import converters
-from converters.txt_to_ac.txt_to_ac_functions_import import download_dictionary_file
-from config.access import ac_session
-from config.access.model_dictionary import models_ac
 from config import log
+from config.access import ac_session, models_ac
+from config.text.functions import download_dictionary_file
+from converters.txt_to_ac.txt_to_ac_functions_convert import converters_ac
 
 
-def db_fill_tables() -> None:
+def db_fill_tables(
+        source_path: str,
+        models: list = models_ac,
+        converters: tuple = converters_ac) -> None:
     """
     Consecutively execute converters and send data to the database
     ! The execution order is important for at least the following data types:
         Type -> Word -> Definition,
     because the conversion of definitions depends on existing words,
     and the conversion of words depends on existing types
-    :return: None
+    :param source_path:
+    :param models:
+    :param converters:
+    :return:
     """
     log.info("Start to fill tables with dictionary data")
+    for model, converter in zip(models, converters):
 
-    for model, converter in zip(models_ac, converters):
         model_name = model.__name__
-        data = download_dictionary_file(model_name)
+        url = f"{source_path}{model.import_file_name}"
+
+        data = download_dictionary_file(url, model_name)
         log.info("Start to process %s objects", model_name)
         objects = converter(data)
         log.info("Total number of %s objects - %s", model_name, len(objects))

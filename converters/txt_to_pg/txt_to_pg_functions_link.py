@@ -6,9 +6,9 @@ Module for creating database relationships
 
 import re
 from typing import List
-from converters.txt_to_pg.txt_to_pg_functions_import import download_dictionary_file
+
+from config import log
 from config.postgres import db
-from config import log, SEPARATOR
 from config.postgres.model_dictionary import Author, Definition, Type, Word, Key
 
 
@@ -135,7 +135,7 @@ def db_link_keys() -> None:
     log.info("Finish to link definitions with their keys")
 
 
-def db_link_tables(words_dataset) -> None:
+def db_link_tables(dataset: dict) -> None:
     """
     Link existing data between tables. For example,
         connect Word objects with Author object(s)
@@ -147,14 +147,10 @@ def db_link_tables(words_dataset) -> None:
     See Models module for more details about them
     :return: None
     """
-
+    words_dataset = dataset[Word.__name__][0]
     log.info("Start to link tables data")
     db_link_authors(words_dataset)
     db_link_complexes(words_dataset)
     db_link_affixes(words_dataset)
     db_link_keys()
     log.info("Finish to link tables data")
-
-
-def get_word_dataset() -> list:
-    return download_dictionary_file("Word", SEPARATOR)

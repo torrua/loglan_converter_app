@@ -11,7 +11,7 @@ from converters.txt_to_ac.txt_to_ac_execute import convert_txt_to_ac
 # TODO Activate source selection
 # TODO Unify logging and resulting
 
-SELECTOR = 4
+SELECTOR = 6
 
 if __name__ == "__main__":
 

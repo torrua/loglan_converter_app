@@ -2,17 +2,17 @@
 """"
 Module for configuration data of AC database
 """
-
 import urllib
 import os
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from config import log
+from config import log, root_directory
 
-__all__ = ["ac_create_engine", "Base", "db_get_statistic", "MDB_FILE_PATH", "ac_session", ]
+__all__ = ["ac_create_engine", "Base", "db_get_statistic", "EXPORT_AC_DIRECTORY_PATH_LOCAL",
+           "MDB_FILE_PATH", "ac_session", "models_ac", "EXPORT_AC_FILE_PATHS_LOCAL"]
 
-MDB_FILE_PATH = os.getenv("MDB_FILE_PATH")
+MDB_FILE_PATH = os.getenv("MDB_FILE_PATH", f"{root_directory}LoglanDictionary.mdb")
 
 
 def ac_create_engine(db_path):
@@ -46,8 +46,16 @@ def ac_create_all():
 
 from config.access import model_dictionary
 
+models_ac = Base.__subclasses__()
 
-def db_get_statistic(db_models: list = model_dictionary.models_ac):
+# IMPORT_AC_DIRECTORY_PATH_LOCAL = os.getenv('IMPORT_DIRECTORY_PATH_LOCAL', f"{root_directory}import\\")
+# IMPORT_AC_FILE_PATHS_LOCAL = [IMPORT_AC_DIRECTORY_PATH_LOCAL + model.import_file_name for model in models_ac]
+
+EXPORT_AC_DIRECTORY_PATH_LOCAL = os.getenv("EXPORT_DIRECTORY_PATH_LOCAL", f"{root_directory}export\\")
+EXPORT_AC_FILE_PATHS_LOCAL = [EXPORT_AC_DIRECTORY_PATH_LOCAL + model.export_file_name for model in models_ac]
+
+
+def db_get_statistic(db_models: list = models_ac):
     """
 
     :param db_models:

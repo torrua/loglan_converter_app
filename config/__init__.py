@@ -4,7 +4,8 @@
 """
 Configuration file for the whole project
 """
-
+import sys
+import re
 import logging
 
 logging.basicConfig(
@@ -18,3 +19,6 @@ log = logging.getLogger(__name__)
 EN = "en"
 DEFAULT_LANGUAGE = EN
 SEPARATOR = "@"
+
+root_pattern = r".*\\"
+root_directory = re.search(root_pattern, sys.executable)[0]

@@ -147,7 +147,7 @@ def converter_definitions(
     }) for item in definitions]
 
 
-converters = (
+converters_ac = (
     converter_authors, converter_definitions, converter_events,
     converter_settings, converter_syllables, converter_types,
-    converter_spell, converter_words, )
+    converter_words, converter_spell, )

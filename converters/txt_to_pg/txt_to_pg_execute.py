@@ -3,13 +3,14 @@
 import time
 from datetime import timedelta
 
-from converters.txt_to_pg.txt_to_pg_functions_link import db_link_tables, get_word_dataset
-from converters.txt_to_pg.txt_to_pg_functions_fill import db_fill_tables, get_txt_dataset
-from config.postgres import db, db_get_statistic
 from config import log, DEFAULT_LANGUAGE
+from config.postgres import db, db_get_statistic
+from config.text import IMPORT_DIRECTORY_PATH_LOCAL
+from converters.txt_to_pg.txt_to_pg_functions_fill import db_fill_tables, get_dataset_for_converters
+from converters.txt_to_pg.txt_to_pg_functions_link import db_link_tables
 
 
-def generic_convert_to_pg(dataset: tuple, word_dataset: list):
+def generic_convert_to_pg(dataset: dict):
     """
     Complete new db generation. It remove previous db with all data
     and fill the new one with data from txt files
@@ -30,10 +31,11 @@ def generic_convert_to_pg(dataset: tuple, word_dataset: list):
     db.create_all()
 
     log.info("MILESTONE: Fill tables in new DB")
-    db_fill_tables(dataset)
+
+    db_fill_tables(dataset=dataset)
 
     log.info("MILESTONE: Link data between tables")
-    db_link_tables(word_dataset)
+    db_link_tables(dataset=dataset)
 
     log.info("ELAPSED TIME IN MINUTES: %s\n",
              timedelta(minutes=time.monotonic() - start_time))
@@ -41,10 +43,9 @@ def generic_convert_to_pg(dataset: tuple, word_dataset: list):
     log.info("FINISH DB CREATION\n")
 
 
-def convert_txt_to_pg() -> None:
-    dataset = get_txt_dataset(DEFAULT_LANGUAGE)
-    word_dataset = get_word_dataset()
-    generic_convert_to_pg(dataset, word_dataset)
+def convert_txt_to_pg(source_path: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:
+    dataset = get_dataset_for_converters(source_path=source_path, language=DEFAULT_LANGUAGE)
+    generic_convert_to_pg(dataset=dataset)
 
 
 if __name__ == "__main__":
