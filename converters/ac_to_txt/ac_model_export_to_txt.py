@@ -29,7 +29,8 @@ class ExportSyllable(AccessSyllable):
 
 class ExportSetting(AccessSetting):
     def export(self):
-        return f"{self.date.strftime('%d.%m.%Y %H:%M:%S')}@{self.db_version}@{self.last_word_id}"
+        return f"{self.date.strftime('%d.%m.%Y %H:%M:%S')}" \
+               f"@{self.db_version}@{self.last_word_id}@{self.db_release}"
 
 
 class ExportType(AccessType):

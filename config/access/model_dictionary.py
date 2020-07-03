@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, Text, Boolean, DateTime, UnicodeText
+from sqlalchemy import Column, String, Integer, Text, Boolean, DateTime
 
 from config.access import Base
 from sqlalchemy.ext.declarative import declared_attr
@@ -40,8 +40,8 @@ class AccessAuthor(Base, BaseFunctions):
 
     id = Column(Integer, primary_key=True)
     abbreviation = Column(String(64), unique=True, nullable=False)
-    full_name = Column(String(255))
-    notes = Column(String(255))
+    full_name = Column(String(64))
+    notes = Column(String(128))
 
 
 class AccessDefinition(Base, BaseFunctions):
@@ -49,12 +49,12 @@ class AccessDefinition(Base, BaseFunctions):
     sort_name = "Definition"
 
     word_id = Column("WID", Integer, primary_key=True)
-    position = Column("I", Integer, primary_key=True)
-    usage = Column("Usage", String(255))
-    grammar = Column("Grammar", String(255))
-    body = Column("Definition", UnicodeText, nullable=False)
-    main = Column("Main", String(255))
-    case_tags = Column("Tags", String(255))
+    position = Column("I", Integer, nullable=False)
+    usage = Column("Usage", String(64))
+    grammar = Column("Grammar", String(8))
+    body = Column("Definition", Text, nullable=False)
+    main = Column("Main", String(8))
+    case_tags = Column("Tags", String(16))
 
 
 class AccessEvent(Base, BaseFunctions):
@@ -65,11 +65,11 @@ class AccessEvent(Base, BaseFunctions):
     sort_name = "Event"
 
     id = Column("EVT", Integer, primary_key=True)
-    name = Column("Event", Text, nullable=False)
-    date = Column("When", Text, nullable=False)
+    name = Column("Event", String(64), nullable=False)
+    date = Column("When", String(32), nullable=False)
     definition = Column("WhyWhat", Text, nullable=False)
-    annotation = Column("DictionaryAnnotation", Text)
-    suffix = Column("FilenameSuffix", Text)
+    annotation = Column("DictionaryAnnotation", String(16))
+    suffix = Column("FilenameSuffix", String(16))
 
 
 class AccessSetting(Base, BaseFunctions):
@@ -82,6 +82,7 @@ class AccessSetting(Base, BaseFunctions):
     date = Column("DateModified", DateTime,  primary_key=True)
     db_version = Column("DBVersion", Integer, nullable=False)
     last_word_id = Column("LastWID", Integer, nullable=False)
+    db_release = Column("DBRelease", String(16), nullable=False)
 
 
 class AccessSyllable(Base, BaseFunctions):
@@ -92,8 +93,8 @@ class AccessSyllable(Base, BaseFunctions):
     sort_name = "Syllable"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column("characters", Text, primary_key=True)
-    type = Column(Text, nullable=False)
+    name = Column("characters", String(8), primary_key=True)
+    type = Column(String(32), nullable=False)
     allowed = Column(Boolean)
 
 
@@ -105,9 +106,9 @@ class AccessType(Base, BaseFunctions):
     sort_name = "Type"
 
     id = Column(Integer, primary_key=True)
-    type = Column(String(255), nullable=False)
-    type_x = Column(String(255), nullable=False)
-    group = Column(String(255))
+    type = Column(String(16), nullable=False)
+    type_x = Column(String(16), nullable=False)
+    group = Column(String(16), nullable=False)
     parentable = Column(Boolean, nullable=False)
 
 
@@ -119,15 +120,15 @@ class AccessWord(Base, BaseFunctions):
     sort_name = "Word"
 
     word_id = Column("WID", Integer, nullable=False, primary_key=True)
-    type = Column("Type", String, nullable=False)
-    type_x = Column("XType", String, nullable=False)
-    affixes = Column("Affixes", String)
-    match = Column("Match", String)
-    authors = Column("Source", String)
-    year = Column("Year", String)
-    rank = Column("Rank", String)
-    origin = Column("Origin", String)
-    origin_x = Column("OriginX", String)
+    type = Column("Type", String(16), nullable=False)
+    type_x = Column("XType", String(16), nullable=False)
+    affixes = Column("Affixes", String(16))
+    match = Column("Match", String(8))
+    authors = Column("Source", String(64))
+    year = Column("Year", String(64))
+    rank = Column("Rank", String(8))
+    origin = Column("Origin", String(128))
+    origin_x = Column("OriginX", String(64))
     used_in = Column("UsedIn", Text)
     TID_old = Column("TID", Integer)  # references
 
@@ -138,12 +139,12 @@ class AccessWordSpell(Base, BaseFunctions):
     sort_name = "WordSpell"
 
     word_id = Column("WID", Integer, nullable=False)
-    word = Column("Word", String, nullable=False)
-    sort_a = Column("SortA", String, nullable=False)
-    sort_b = Column("SortB", String, nullable=False)
+    word = Column("Word", String(64), nullable=False)
+    sort_a = Column("SortA", String(64), nullable=False)
+    sort_b = Column("SortB", String(64), nullable=False)
     event_start_id = Column("SEVT", Integer, nullable=False)
     event_end_id = Column("EEVT", Integer, nullable=False)
-    origin_x = Column("OriginX", String)
+    origin_x = Column("OriginX", String(64))
     id = Column(Integer, primary_key=True)
 
 

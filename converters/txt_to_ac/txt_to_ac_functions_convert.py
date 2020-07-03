@@ -53,6 +53,7 @@ def converter_settings(settings: List[List[str]]) -> List[AccessSetting]:
         "date": datetime.strptime(item[0], '%d.%m.%Y %H:%M:%S'),
         "db_version": int(item[1]),
         "last_word_id": int(item[2]),
+        "db_release": item[3],
     }) for item in settings]
 
 

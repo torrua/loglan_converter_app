@@ -165,9 +165,9 @@ class Author(BaseFunctions, db.Model):
     import_file_name = "Author.txt"
 
     id = db.Column(db.Integer, primary_key=True)
-    abbreviation = db.Column(db.String(256), unique=True, nullable=False)
-    full_name = db.Column(db.String(256))
-    notes = db.Column(db.String(256))
+    abbreviation = db.Column(db.String(64), unique=True, nullable=False)
+    full_name = db.Column(db.String(64))
+    notes = db.Column(db.String(128))
 
 
 class Event(BaseFunctions, db.Model):
@@ -181,10 +181,10 @@ class Event(BaseFunctions, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     date = db.Column(db.Date, nullable=False)
-    name = db.Column(db.Text, nullable=False)
+    name = db.Column(db.String(64), nullable=False)
     definition = db.Column(db.Text, nullable=False)
-    annotation = db.Column(db.Text, nullable=False)
-    suffix = db.Column(db.Text, nullable=False)
+    annotation = db.Column(db.String(16), nullable=False)
+    suffix = db.Column(db.String(16), nullable=False)
 
 
 class Key(BaseFunctions, db.Model):
@@ -198,8 +198,8 @@ class Key(BaseFunctions, db.Model):
     __load_to_db__ = True
 
     id = db.Column(db.Integer, primary_key=True)
-    word = db.Column(db.String(256), unique=True, nullable=False)
-    language = db.Column(db.String(256))
+    word = db.Column(db.String(64), unique=True, nullable=False)
+    language = db.Column(db.String(16))
 
 
 class Setting(BaseFunctions, db.Model):
@@ -215,6 +215,7 @@ class Setting(BaseFunctions, db.Model):
     date = db.Column(db.DateTime, nullable=True)
     db_version = db.Column(db.Integer, nullable=False)
     last_word_id = db.Column(db.Integer, nullable=False)
+    db_release = db.Column(db.String(16), nullable=False)
 
 
 class Syllable(BaseFunctions, db.Model):
@@ -227,8 +228,8 @@ class Syllable(BaseFunctions, db.Model):
     import_file_name = "Syllable.txt"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.Text, nullable=False)
-    type = db.Column(db.Text, nullable=False)
+    name = db.Column(db.String(8), nullable=False)
+    type = db.Column(db.String(32), nullable=False)
     allowed = db.Column(db.Boolean)
 
 
@@ -242,9 +243,9 @@ class Type(BaseFunctions, db.Model):
     import_file_name = "Type.txt"
 
     id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.Text, nullable=False)
-    type_x = db.Column(db.Text, nullable=False)
-    group = db.Column(db.Text)
+    type = db.Column(db.String(16), nullable=False)
+    type_x = db.Column(db.String(16), nullable=False)
+    group = db.Column(db.String(16))
     parentable = db.Column(db.Boolean, nullable=False)
 
 
@@ -260,13 +261,13 @@ class Definition(BaseFunctions, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     word_id = db.Column(db.Integer, db.ForeignKey(f'{t_name_words}.id'), nullable=False)
     position = db.Column(db.Integer, nullable=False)
-    usage = db.Column(db.Text)
-    grammar_code = db.Column(db.Text)
+    usage = db.Column(db.String(64))
+    grammar_code = db.Column(db.String(8))
     slots = db.Column(db.Integer)
-    case_tags = db.Column(db.Text)
+    case_tags = db.Column(db.String(16))
     body = db.Column(db.Text, nullable=False)
-    language = db.Column(db.Text)
-    notes = db.Column(db.Text)
+    language = db.Column(db.String(16))
+    notes = db.Column(db.String(255))
 
     keys = db.relationship(Key.__name__, secondary=t_connect_keys,
                            backref="definitions", lazy='dynamic')
@@ -296,8 +297,8 @@ class Word(BaseFunctions, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     id_old = db.Column(db.Integer, nullable=False)  # Compatibility with the previous database
     name = db.Column(db.String(64), nullable=False)
-    origin = db.Column(db.String(256))
-    origin_x = db.Column(db.String(256))
+    origin = db.Column(db.String(128))
+    origin_x = db.Column(db.String(64))
 
     type_id = db.Column("type", db.ForeignKey(f'{t_name_types}.id'), nullable=False)
     type = db.relationship(Type.__name__, backref="words")
@@ -310,8 +311,8 @@ class Word(BaseFunctions, db.Model):
     event_end = db.relationship(
         "Event", foreign_keys=[event_end_id], backref="deprecated_words")
 
-    match = db.Column(db.Text)
-    rank = db.Column(db.Text)
+    match = db.Column(db.String(8))
+    rank = db.Column(db.String(8))
     year = db.Column(db.Date)
     notes = db.Column(db.JSON)
     TID_old = db.Column(db.Integer)  # references
