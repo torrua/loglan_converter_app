@@ -65,3 +65,15 @@ def db_get_statistic(db_models: list = models_ac):
     for model in db_models:
         log.info(f"%s: %s", model.sort_name, ac_session.query(model).count(), )
     log.info("Finish to get statistic of imported items\n")
+
+
+def db_get_property():
+    objects = ac_session.query(model_dictionary.AccessWord).all()
+    objects_str = [obj.rank for obj in objects if obj.rank]
+    print(len(objects_str))
+    maxi = max(objects_str, key=len)
+    print(maxi, len(maxi))
+
+
+if __name__ == "__main__":
+    db_get_property()

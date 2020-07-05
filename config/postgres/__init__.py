@@ -54,5 +54,13 @@ def db_get_statistic(db_models: tuple = models_pg__for_stat):
     log.info("Finish to get statistic of imported items\n")
 
 
+def db_get_property():
+    objects = model_dictionary.Word.query.all()
+    objects_str = [obj.rank for obj in objects]
+    print(len(objects_str))
+    maxi = max(objects_str, key=len)
+    print(maxi, len(maxi))
+
+
 if __name__ == "__main__":
-    db_get_statistic()
+    db_get_property()
