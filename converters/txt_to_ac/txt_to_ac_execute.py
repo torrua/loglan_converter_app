@@ -14,7 +14,7 @@ from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 from converters.txt_to_ac.txt_to_ac_functions_fill import db_fill_tables
 
 
-def db_backup_file(db_path, suffix: str = "backup", remove: bool = False):
+def db_backup_file(db_path: str, suffix: str = "backup", remove: bool = False):
     """
     :param db_path:
     :param suffix:
