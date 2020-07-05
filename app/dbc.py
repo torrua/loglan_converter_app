@@ -32,7 +32,16 @@ from converters.ac_to_pg.ac_to_pg_execute import convert_ac_to_pg
 from converters.pg_to_ac.pg_to_ac_execute import convert_pg_to_ac
 
 from config.access import MDB_FILE_PATH, EXPORT_AC_DIRECTORY_PATH_LOCAL
-from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL
+from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
+
+
+def get_import_path():
+    import_local_path = dbc_support.import_path.get() if dbc_support.import_path.get() else IMPORT_DIRECTORY_PATH_LOCAL
+    return IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.from_git.get() else import_local_path
+
+
+def get_export_path():
+    return dbc_support.export_path.get() if dbc_support.export_path.get() else EXPORT_DIRECTORY_PATH_LOCAL
 
 
 def button_convert_ac_to_txt(event):
@@ -41,33 +50,41 @@ def button_convert_ac_to_txt(event):
 
 
 def button_convert_txt_to_ac(event):
-    source = IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.che46.get() else IMPORT_DIRECTORY_PATH_LOCAL
+    source = get_import_path()
     convert_txt_to_ac(source_path=source)
     messagebox.showinfo('from text to access', f'Export completed successfully from {source}!')
 
 
 def button_convert_txt_to_pg(event):
-    source = IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.che46.get() else IMPORT_DIRECTORY_PATH_LOCAL
-    convert_txt_to_pg(source_path=source)
-    messagebox.showinfo('from text to postgres', f'Export completed successfully from {source}!')
+    source = get_import_path()
+    try:
+        convert_txt_to_pg(source_path=source)
+    except AttributeError:
+        messagebox.showwarning('from text to postgres', f'Cannot find Postgres database!\nPlease specify URI.')
+    else:
+        messagebox.showinfo('from text to postgres', f'Export completed successfully from {source}!')
 
 
 def button_convert_ac_to_pg(event):
     # source = IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.che46.get() else IMPORT_DIRECTORY_PATH_LOCAL
     convert_ac_to_pg()
-    # messagebox.showinfo('from access to postgres', f'Export completed successfully from {source}!')
+    messagebox.showinfo('from access to postgres', f'Export completed successfully!')
 
 
 def button_convert_pg_to_ac(event):
     # source = IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.che46.get() else IMPORT_DIRECTORY_PATH_LOCAL
     convert_pg_to_ac()
-    # messagebox.showinfo('from access to postgres', f'Export completed successfully from {source}!')
+    messagebox.showinfo('from postgres to access', f'Export completed successfully!')
 
 
 def button_convert_pg_to_txt(event):
     # source = IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.che46.get() else IMPORT_DIRECTORY_PATH_LOCAL
     convert_pg_to_txt()
-    # messagebox.showinfo('from access to postgres', f'Export completed successfully from {source}!')
+    messagebox.showinfo('from postgres to text', f'Export completed successfully!')
+
+
+def on_change(element):
+    return element.widget.get()
 
 
 def vp_start_gui():
@@ -92,10 +109,14 @@ def vp_start_gui():
     img = PhotoImage(data=base64.b64decode(icon))
     root.wm_iconphoto(True, img)
 
-    dbc_support.set_Tk_var()
+    dbc_support.set_tk_variables()
     top = MainWindow(root)
 
     dbc_support.init(root, top)
+
+    def trigger_git_local_import(event):
+        top.import_path.configure(state="normal") if \
+            dbc_support.from_git.get() else top.import_path.configure(state="disable")
 
     top.BAT.bind('<ButtonRelease-1>', button_convert_ac_to_txt)
     top.BTA.bind('<ButtonRelease-1>', button_convert_txt_to_ac)
@@ -103,6 +124,7 @@ def vp_start_gui():
     top.BAP.bind('<ButtonRelease-1>', button_convert_ac_to_pg)
     top.BPA.bind('<ButtonRelease-1>', button_convert_pg_to_ac)
     top.BPT.bind('<ButtonRelease-1>', button_convert_pg_to_txt)
+    top.is_from_github.bind('<Button-1>', trigger_git_local_import)
 
     root.mainloop()
 
@@ -149,7 +171,7 @@ class MainWindow:
             insertbackground="black",
             selectbackground="#c4c4c4",
             selectforeground="black",
-            state="readonly",
+            # state="readonly",
             font=font9, )
 
         default_button_configuration = dict(
@@ -176,6 +198,7 @@ class MainWindow:
             relx=0.178, rely=0.144, height=20,
             relwidth=0.789, bordermode='ignore')
         self.postgres_uri.configure(**default_entry_configuration)
+        self.postgres_uri.configure(textvariable=dbc_support.postgres_uri)
 
         self.p_label = tk.Label(self.configuration)
         self.p_label.place(
@@ -189,8 +212,8 @@ class MainWindow:
         self.access_path.place(
             relx=0.178, rely=0.308, height=20,
             relwidth=0.789, bordermode='ignore')
-        self.access_path.insert(0, MDB_FILE_PATH)
         self.access_path.configure(**default_entry_configuration)
+        self.access_path.configure(textvariable=dbc_support.access_path)
 
         self.a_label = tk.Label(self.configuration)
         self.a_label.place(
@@ -203,8 +226,8 @@ class MainWindow:
         self.export_path.place(
             relx=0.178, rely=0.513, height=20,
             relwidth=0.789, bordermode='ignore')
-        self.export_path.insert(0, EXPORT_AC_DIRECTORY_PATH_LOCAL)
         self.export_path.configure(**default_entry_configuration)
+        self.export_path.configure(textvariable=dbc_support.export_path)
 
         self.e_label = tk.Label(self.configuration)
         self.e_label.place(
@@ -217,8 +240,9 @@ class MainWindow:
         self.import_path.place(
             relx=0.178, rely=0.667, height=20,
             relwidth=0.789, bordermode='ignore')
-        self.import_path.insert(0, IMPORT_DIRECTORY_PATH_LOCAL)
         self.import_path.configure(**default_entry_configuration)
+        self.import_path.configure(textvariable=dbc_support.import_path)
+        self.import_path.configure(state="disable")
 
         self.i_label = tk.Label(self.configuration)
         self.i_label.place(
@@ -240,7 +264,7 @@ class MainWindow:
         self.is_from_github.configure(highlightcolor="black")
         self.is_from_github.configure(justify='left')
         self.is_from_github.configure(text='''Use text files from Github''')
-        self.is_from_github.configure(variable=dbc_support.che46)
+        self.is_from_github.configure(variable=dbc_support.from_git)
 
         self.BTP = tk.Button(top)
         self.BTP.place(relx=0.034, rely=0.719, height=24, width=147)

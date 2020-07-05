@@ -5,7 +5,10 @@
 #  in conjunction with Tcl version 8.6
 #    Jun 27, 2020 05:15:28 AM +07  platform: Windows NT
 
-import sys
+from config.text import IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
+from config.access import MDB_FILE_PATH
+
+global from_git, import_path, export_path, postgres_uri, access_path
 
 try:
     import Tkinter as tk
@@ -20,9 +23,13 @@ except ImportError:
     py3 = True
 
 
-def set_Tk_var():
-    global che46
-    che46 = tk.IntVar()
+def set_tk_variables():
+    global from_git, import_path, export_path, postgres_uri, access_path
+    from_git = tk.IntVar(value=1)
+    import_path = tk.StringVar(value=IMPORT_DIRECTORY_PATH_LOCAL)
+    export_path = tk.StringVar(value=EXPORT_DIRECTORY_PATH_LOCAL)
+    postgres_uri = tk.StringVar()
+    access_path = tk.StringVar(value=MDB_FILE_PATH)
 
 
 def init(top, gui, *args, **kwargs):
