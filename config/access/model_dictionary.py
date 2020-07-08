@@ -27,6 +27,10 @@ class BaseFunctions:
         for key in kwargs:
             setattr(self, key, kwargs[key])
 
+    @classmethod
+    def export_file_path(cls, export_directory):
+        return export_directory + cls.export_file_name
+
     def export(self):
         pass
 

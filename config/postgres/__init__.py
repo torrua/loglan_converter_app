@@ -40,7 +40,7 @@ models_pg_to_db = [model for model in all_models_pg if model.__load_to_db__]
 models_pg__for_stat = tuple(models_pg_to_db)
 
 EXPORT_PG_DIRECTORY_PATH_LOCAL = os.getenv("EXPORT_DIRECTORY_PATH_LOCAL", f"{root_directory}export\\")
-EXPORT_PG_FILE_PATHS_LOCAL = [EXPORT_PG_DIRECTORY_PATH_LOCAL + model.export_file_name for model in models_pg_from_file]
+# EXPORT_PG_FILE_PATHS_LOCAL = [EXPORT_PG_DIRECTORY_PATH_LOCAL + model.export_file_name for model in models_pg_from_file]
 
 
 def db_get_statistic(db_models: tuple = models_pg__for_stat):

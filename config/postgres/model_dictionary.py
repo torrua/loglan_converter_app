@@ -64,6 +64,10 @@ class BaseFunctions:
         """
         return f"PG_{datetime.now().strftime('%y%m%d%H%M')}_{cls.import_file_name}"
 
+    @classmethod
+    def export_file_path(cls, export_directory):
+        return export_directory + cls.export_file_name
+
     def __repr__(self) -> str:
         return str(self.__dict__)
 

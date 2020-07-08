@@ -8,14 +8,14 @@ Module for uploading data from Access database to text files
 from typing import List
 
 from config import log
-from config.access import ac_session, EXPORT_AC_FILE_PATHS_LOCAL
+from config.access import ac_session, EXPORT_AC_DIRECTORY_PATH_LOCAL
 from converters.ac_to_txt.ac_model_export_to_txt import export_models_ac
-from config.text.functions import convert_schema_to_txt
+from config.text.functions import convert_db_to_txt
 
 # pylint: disable=E1101
 
 
-def convert_model_to_txt(export_model) -> List[str]:
+def export_ac_model_to_list_of_str(export_model) -> List[str]:
     """
     This convert function suitable for all AC models
     :param export_model: Flask_sqlalchemy.model.DefaultMeta object
@@ -38,10 +38,8 @@ def convert_model_to_txt(export_model) -> List[str]:
 
 
 def convert_ac_to_txt():
-    """A wrapper for converting an Postgres database into text files"""
-    export_schema = dict(zip(EXPORT_AC_FILE_PATHS_LOCAL, export_models_ac))
-    export_suffix = "AC"
-    convert_schema_to_txt(export_schema, convert_model_to_txt, export_suffix)
+    """A wrapper for converting an Access database into text files"""
+    convert_db_to_txt(export_models_ac, export_ac_model_to_list_of_str, EXPORT_AC_DIRECTORY_PATH_LOCAL)
 
 
 if __name__ == "__main__":

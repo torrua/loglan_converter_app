@@ -8,14 +8,14 @@ Module for uploading data from Postgres database to text files
 from typing import List
 
 from config import log
-from config.postgres import EXPORT_PG_FILE_PATHS_LOCAL
-from config.text.functions import convert_schema_to_txt
+from config.postgres import EXPORT_PG_DIRECTORY_PATH_LOCAL
+from config.text.functions import convert_db_to_txt
 from converters.pg_to_txt.pg_model_export_to_txt import export_models_pg
 
 # pylint: disable=E1101
 
 
-def convert_model_to_txt(export_model) -> List[str]:
+def export_pg_model_to_list_of_str(export_model) -> List[str]:
     """
     This convert function suitable for all PG models
     :param export_model: Flask_sqlalchemy.model.DefaultMeta object
@@ -38,9 +38,7 @@ def convert_model_to_txt(export_model) -> List[str]:
 
 def convert_pg_to_txt():
     """A wrapper for converting an Access database into text files"""
-    export_schema = dict(zip(EXPORT_PG_FILE_PATHS_LOCAL, export_models_pg))
-    export_suffix = "PG"
-    convert_schema_to_txt(export_schema, convert_model_to_txt, export_suffix)
+    convert_db_to_txt(export_models_pg, export_pg_model_to_list_of_str, EXPORT_PG_DIRECTORY_PATH_LOCAL)
 
 
 if __name__ == "__main__":

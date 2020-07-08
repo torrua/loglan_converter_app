@@ -7,41 +7,39 @@ Common functions for text files
 
 import time
 from datetime import timedelta
-from os import path, makedirs
+import os
 from typing import List
 
 import requests
 
 from config import log, SEPARATOR
-from config.access import EXPORT_AC_DIRECTORY_PATH_LOCAL
 
 
-def save_to_file(elements, file_path) -> None:
+def save_to_file(output_file_path, elements) -> None:
     """Save list of str to text file"""
-    with open(file_path, "w+", encoding="utf-8") as file:
+    os.makedirs(os.path.dirname(output_file_path), exist_ok=True)
+    with open(output_file_path, "w+", encoding="utf-8") as file:
         file.write("\n".join(elements))
     file.close()
+    log.info("%s items exported to %s", len(elements), output_file_path.replace(r"\\", '\\'))
 
-    log.info("%s items exported to %s", len(elements), file_path.replace(r"\\", '\\'))
 
-
-def convert_schema_to_txt(
-        export_schema: dict, converter, file_suffix: str = "",
-        export_directory_path: str = EXPORT_AC_DIRECTORY_PATH_LOCAL):
+def convert_db_to_txt(export_models: list, exporter, export_directory: str):
     """
 
+    :param export_models:
+    :param exporter:
+    :param export_directory:
     :return:
     """
+
     log.info("Starting db export")
     start_time = time.monotonic()
 
-    if not path.isdir(export_directory_path):
-        log.debug("Creating export directory: %s", export_directory_path)
-        makedirs(export_directory_path)
-    for export_path, export_model in export_schema.items():
+    for export_model in export_models:
         log.info("Starting %s export", export_model.__name__)
-        elements = converter(export_model)
-        save_to_file(elements, export_path.replace(".txt", f"_{file_suffix}.txt"))
+        elements = exporter(export_model)
+        save_to_file(export_model.export_file_path(export_directory), elements)
         log.info("Ending %s export\n", export_model.__name__)
 
     log.info("ELAPSED TIME IN MINUTES: %s\n", timedelta(minutes=time.monotonic() - start_time))

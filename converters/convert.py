@@ -13,7 +13,7 @@ from converters.txt_to_ac.txt_to_ac_execute import convert_txt_to_ac
 
 # TODO Unify logging and resulting
 
-SELECTOR = 5
+SELECTOR = 1
 
 if __name__ == "__main__":
 
