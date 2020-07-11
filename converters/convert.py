@@ -1,11 +1,11 @@
-from converters.ac_to_txt.ac_to_txt_execute import convert_ac_to_txt
-from converters.ac_to_pg.ac_to_pg_execute import convert_ac_to_pg
+from converters.ac_to_txt import convert_ac_to_txt
+from converters.ac_to_pg import convert_ac_to_pg
 
-from converters.pg_to_txt.pg_to_txt_execute import convert_pg_to_txt
-from converters.pg_to_ac.pg_to_ac_execute import convert_pg_to_ac
+from converters.pg_to_txt import convert_pg_to_txt
+from converters.pg_to_ac import convert_pg_to_ac
 
-from converters.txt_to_pg.txt_to_pg_execute import convert_txt_to_pg
-from converters.txt_to_ac.txt_to_ac_execute import convert_txt_to_ac
+from converters.txt_to_pg import convert_txt_to_pg
+from converters.txt_to_ac import convert_txt_to_ac
 
 # TODO Activate source selection
 #   TODO fix txt export paths
@@ -13,7 +13,7 @@ from converters.txt_to_ac.txt_to_ac_execute import convert_txt_to_ac
 
 # TODO Unify logging and resulting
 
-SELECTOR = 1
+SELECTOR = 6
 
 if __name__ == "__main__":
 

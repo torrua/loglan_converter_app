@@ -24,14 +24,13 @@ from app import dbc_support
 from tkinter import PhotoImage, messagebox
 import base64
 
-from converters.ac_to_txt.ac_to_txt_execute import convert_ac_to_txt
-from converters.txt_to_ac.txt_to_ac_execute import convert_txt_to_ac
-from converters.txt_to_pg.txt_to_pg_execute import convert_txt_to_pg
-from converters.pg_to_txt.pg_to_txt_execute import convert_pg_to_txt
-from converters.ac_to_pg.ac_to_pg_execute import convert_ac_to_pg
-from converters.pg_to_ac.pg_to_ac_execute import convert_pg_to_ac
+from converters.ac_to_txt import convert_ac_to_txt
+from converters.txt_to_ac import convert_txt_to_ac
+from converters.txt_to_pg import convert_txt_to_pg
+from converters.pg_to_txt import convert_pg_to_txt
+from converters.ac_to_pg import convert_ac_to_pg
+from converters.pg_to_ac import convert_pg_to_ac
 
-from config.access import MDB_FILE_PATH, EXPORT_AC_DIRECTORY_PATH_LOCAL
 from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
 
 

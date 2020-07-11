@@ -13,6 +13,7 @@ from typing import List
 import requests
 
 from config import log, SEPARATOR
+from config.text import EXPORT_DIRECTORY_PATH_LOCAL
 
 
 def save_to_file(output_file_path, elements) -> None:
@@ -24,7 +25,7 @@ def save_to_file(output_file_path, elements) -> None:
     log.info("%s items exported to %s", len(elements), output_file_path.replace(r"\\", '\\'))
 
 
-def convert_db_to_txt(export_models: list, exporter, export_directory: str):
+def convert_db_to_txt(export_models: list, exporter, export_directory: str = EXPORT_DIRECTORY_PATH_LOCAL):
     """
 
     :param export_models:
@@ -36,8 +37,8 @@ def convert_db_to_txt(export_models: list, exporter, export_directory: str):
     log.info("Starting db export")
     start_time = time.monotonic()
 
-    for export_model in export_models:
-        log.info("Starting %s export", export_model.__name__)
+    for index, export_model in enumerate(export_models, 1):
+        log.info("Starting %s export (%s/%s)", export_model.__name__, index, len(export_models))
         elements = exporter(export_model)
         save_to_file(export_model.export_file_path(export_directory), elements)
         log.info("Ending %s export\n", export_model.__name__)
