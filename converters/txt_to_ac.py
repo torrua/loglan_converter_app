@@ -9,9 +9,10 @@ import win32com.client
 from sqlalchemy import MetaData
 
 from config import log
-from config.access import ac_create_engine, MDB_FILE_PATH as AC_PATH, db_get_statistic
+from config.access import ac_create_engine, MDB_FILE_PATH as AC_PATH, db_get_statistic, session
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
-from converters.txt_to_ac.txt_to_ac_functions_fill import db_fill_tables
+from config.text.functions import download_dictionary_file
+from config.access.ac_model_export_to_txt import export_models_ac
 
 
 def db_backup_file(db_path: str, suffix: str = "backup", remove: bool = False):
@@ -53,6 +54,35 @@ def db_compress_file(db_path):
     os_app.Application.Quit()
     os.remove(db_path)
     os.rename(dst_db, db_path)
+
+
+def db_fill_tables(source_path: str, models: list = export_models_ac) -> None:
+    """
+    Consecutively execute converters and send data to the database
+    ! The execution order is important for at least the following data types:
+        Type -> Word -> Definition,
+    because the conversion of definitions depends on existing words,
+    and the conversion of words depends on existing types
+    :param source_path:
+    :param models:
+    :return:
+    """
+    log.info("Start to fill tables with dictionary data")
+    ac_session = session()
+    for model in models:
+        model_name = model.__name__
+        url = f"{source_path}{model.import_file_name}"
+        data = download_dictionary_file(url, model_name)
+        log.info("Start to process %s objects", model_name)
+        objects = [model(**model.import_(item)) for item in data]
+        log.info("Total number of %s objects - %s", model_name, len(objects))
+        log.info("Add %s objects to Database", model_name)
+        ac_session.bulk_save_objects(objects)
+        log.debug("Commit Database changes")
+        ac_session.commit()
+        log.info("Finish to process %s objects\n", model_name)
+    ac_session.close()
+    log.info("Finish to fill tables with dictionary data\n")
 
 
 def convert_txt_to_ac(db_path: str = AC_PATH, source_path: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:

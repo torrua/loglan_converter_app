@@ -7,7 +7,7 @@ from config import log, SEPARATOR, DEFAULT_LANGUAGE
 from config.postgres import db, models_pg_from_file, models_pg_to_db
 from config.postgres.model_dictionary import Author, Event, \
     Definition, Setting, Syllable, Type, Word, WordSpell, Key
-from converters.txt_to_pg.txt_to_pg_functions_convert import converters_pg
+from converters.txt_to_pg.converters_txt_to_pg import converters_pg
 from config.text.functions import download_dictionary_file
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 

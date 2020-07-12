@@ -12,7 +12,7 @@ from flask import Flask
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-from config import log, root_directory
+from .. import log, root_directory
 
 
 class Config:
@@ -37,13 +37,12 @@ all_models_pg = sorted(
 
 models_pg_from_file = [model for model in all_models_pg if model.__load_from_file__]
 models_pg_to_db = [model for model in all_models_pg if model.__load_to_db__]
-models_pg__for_stat = tuple(models_pg_to_db)
+models_pg_for_stat = tuple(models_pg_to_db)
 
 EXPORT_PG_DIRECTORY_PATH_LOCAL = os.getenv("EXPORT_DIRECTORY_PATH_LOCAL", f"{root_directory}export\\")
-# EXPORT_PG_FILE_PATHS_LOCAL = [EXPORT_PG_DIRECTORY_PATH_LOCAL + model.export_file_name for model in models_pg_from_file]
 
 
-def db_get_statistic(db_models: tuple = models_pg__for_stat):
+def db_get_statistic(db_models: tuple = models_pg_for_stat):
     """
     :param db_models:
     :return:
@@ -55,6 +54,9 @@ def db_get_statistic(db_models: tuple = models_pg__for_stat):
 
 
 def db_get_property():
+    """
+    :return:
+    """
     objects = model_dictionary.Word.query.all()
     objects_str = [obj.rank for obj in objects]
     print(len(objects_str))
@@ -63,4 +65,4 @@ def db_get_property():
 
 
 if __name__ == "__main__":
-    db_get_property()
+    pass

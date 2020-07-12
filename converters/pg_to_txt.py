@@ -9,7 +9,7 @@ from typing import List
 
 from config import log
 from config.text.functions import convert_db_to_txt
-from converters.pg_to_txt.pg_model_export_to_txt import export_models_pg
+from config.postgres.pg_model_export_to_txt import export_models_pg
 
 # pylint: disable=E1101
 
