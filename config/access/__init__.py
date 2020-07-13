@@ -15,7 +15,7 @@ from sqlalchemy.orm import sessionmaker
 from .. import log, root_directory
 
 __all__ = ["ac_create_engine", "Base", "db_get_statistic",
-           "EXPORT_AC_DIRECTORY_PATH_LOCAL",
+           "EXPORT_AC_DIRECTORY_PATH_LOCAL", "engine",
            "MDB_FILE_PATH", "session", "models_ac", ]
 
 MDB_FILE_PATH = os.getenv(

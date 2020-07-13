@@ -9,7 +9,7 @@ import win32com.client
 from sqlalchemy import MetaData
 
 from config import log
-from config.access import ac_create_engine, MDB_FILE_PATH as AC_PATH, db_get_statistic, session
+from config.access import ac_create_engine, MDB_FILE_PATH as AC_PATH, db_get_statistic, session, engine
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import download_dictionary_file
 from config.access.ac_model_export_to_txt import export_models_ac
@@ -48,6 +48,7 @@ def db_compress_file(db_path):
     :return:
     """
 
+    engine.dispose()
     dst_db = db_path.replace(".mdb", "_temp.mdb")
     os_app = win32com.client.Dispatch("Access.Application")
     os_app.compactRepair(db_path, dst_db)
@@ -105,19 +106,20 @@ def convert_txt_to_ac(db_path: str = AC_PATH, source_path: str = IMPORT_DIRECTOR
     log.info("MILESTONE: Clear all existing tables in DB")
     db_clear_content(db_path=db_path)
 
-    log.info("MILESTONE: Compress DB")
-    db_compress_file(db_path=db_path)
-
     log.info("MILESTONE: Fill tables in new DB")
     db_fill_tables(source_path=source_path)
 
     log.info("MILESTONE: Delete backup")
     db_backup_file(db_path=db_path, remove=True)
 
+    log.info("MILESTONE: Compress DB")
+    db_compress_file(db_path=db_path)
+
     log.info("ELAPSED TIME IN MINUTES: %s\n",
              timedelta(minutes=time.monotonic() - start_time))
 
     db_get_statistic()
+
     log.info("FINISH DB CREATION")
 
 
