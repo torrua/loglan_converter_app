@@ -52,13 +52,14 @@ class AccessDefinition(Base, BaseFunctions):
     __tablename__ = 'WordDefinition'
     sort_name = "Definition"
 
-    word_id = Column("WID", Integer, primary_key=True)
+    word_id = Column("WID", Integer)
     position = Column("I", Integer, nullable=False)
     usage = Column("Usage", String(64))
     grammar = Column("Grammar", String(8))
     body = Column("Definition", Text, nullable=False)
     main = Column("Main", String(8))
     case_tags = Column("Tags", String(16))
+    id = Column("id", Integer, primary_key=True)
 
 
 class AccessEvent(Base, BaseFunctions):
