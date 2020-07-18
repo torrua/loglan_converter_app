@@ -7,6 +7,8 @@ Configuration file for the whole project
 import sys
 import re
 import logging
+from flask import Flask
+
 
 logging.basicConfig(
     format='%(filename)s [LINE:%(lineno)d]\t[%(asctime)s] '
@@ -22,3 +24,21 @@ SEPARATOR = "@"
 
 root_pattern = r".*\\"
 root_directory = re.search(root_pattern, sys.executable)[0]
+
+
+def create_app(config):
+    """
+    Create app
+    """
+
+    # app initialization
+    app = Flask(__name__)
+
+    app.config.from_object(config)
+
+    # db initialization
+    from config.postgres.model_dictionary import db
+    db.init_app(app)
+    # db.create_all(app=app) when use need to re-initialize db
+
+    return app

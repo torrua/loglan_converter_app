@@ -28,7 +28,7 @@ def get_data_from_schema():
         objects = [import_model(**import_model.import_(line)) for line in prepared_lines]
         ac_session.bulk_save_objects(objects)
         ac_session.commit()
-        log.info("Ending %s export", export_model.__name__)
+        log.info("Ending %s export - %s object(s)", export_model.__name__, len(objects))
     ac_session.close()
     log.info("Ending db export\n")
 
@@ -53,14 +53,14 @@ def convert_pg_to_ac(db_path: str = AC_PATH) -> None:
     log.info("MILESTONE: Clear all existing tables in DB")
     db_clear_content(db_path=db_path)
 
-    log.info("MILESTONE: Compress DB")
-    db_compress_file(db_path=db_path)
-
     log.info("MILESTONE: Fill tables in new DB")
     get_data_from_schema()
 
     log.info("MILESTONE: Delete backup")
     db_backup_file(db_path=db_path, remove=True)
+
+    log.info("MILESTONE: Compress DB")
+    db_compress_file(db_path=db_path)
 
     log.info("ELAPSED TIME IN MINUTES: %s\n",
              timedelta(minutes=time.monotonic() - start_time))

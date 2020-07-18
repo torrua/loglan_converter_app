@@ -18,20 +18,24 @@ SELECTOR = 4
 
 if __name__ == "__main__":
 
-    if SELECTOR == 1:
-        convert_ac_to_txt()
+    from config import create_app
+    from config.postgres import CLIConfig
 
-    elif SELECTOR == 2:
-        convert_ac_to_pg()
+    with create_app(CLIConfig).app_context():
+        if SELECTOR == 1:
+            convert_ac_to_txt()
 
-    elif SELECTOR == 3:
-        convert_pg_to_txt()
+        elif SELECTOR == 2:
+            convert_ac_to_pg()
 
-    elif SELECTOR == 4:
-        convert_pg_to_ac()
+        elif SELECTOR == 3:
+            convert_pg_to_txt()
 
-    elif SELECTOR == 5:
-        convert_txt_to_ac()
+        elif SELECTOR == 4:
+            convert_pg_to_ac()
 
-    else:
-        convert_txt_to_pg()
+        elif SELECTOR == 5:
+            convert_txt_to_ac()
+
+        else:
+            convert_txt_to_pg()

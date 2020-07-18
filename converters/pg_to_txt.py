@@ -20,7 +20,6 @@ def export_pg_model_to_list_of_str(export_model) -> List[str]:
     :param export_model: Flask_sqlalchemy.model.DefaultMeta object
     :return: List[str]
     """
-
     attr = getattr(export_model, "id_old", None)
     if attr:
         collection = export_model.query.order_by(

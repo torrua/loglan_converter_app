@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=R0903, E1101, C0103
+
 """
 Models of LOD database
 """
@@ -8,8 +10,6 @@ from datetime import datetime
 from typing import List, Set
 from sqlalchemy.ext.declarative import declared_attr
 from config.postgres import db
-
-# pylint: disable=R0903, E1101, C0103
 
 db.metadata.clear()
 
@@ -42,7 +42,7 @@ t_connect_keys = db.Table(
     db.Column('DID', db.ForeignKey(f'{t_name_definitions}.id'), primary_key=True), )
 
 
-class BaseFunctions:
+class DictionaryBase:
     """
     Base class for common methods
     """
@@ -71,8 +71,12 @@ class BaseFunctions:
     def __repr__(self) -> str:
         return str(self.__dict__)
 
-    def __init__(self, dictionary: dict):
-        self.__dict__.update(dictionary)
+    def __init__(self, *initial_data, **kwargs):
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
 
     def save(self):
         """
@@ -103,6 +107,13 @@ class BaseFunctions:
     def export(self):
         """
         Export record data from DB
+        Should be redefine in model's class
+        :return:
+        """
+
+    def import_(self):
+        """
+        Import txt data to DB
         Should be redefine in model's class
         :return:
         """
@@ -159,7 +170,7 @@ class BaseFunctions:
         return set(cls.all_attributes() - cls.foreign_keys())
 
 
-class Author(BaseFunctions, db.Model):
+class Author(DictionaryBase, db.Model):
     """
     Author model
     """
@@ -174,7 +185,7 @@ class Author(BaseFunctions, db.Model):
     notes = db.Column(db.String(128))
 
 
-class Event(BaseFunctions, db.Model):
+class Event(DictionaryBase, db.Model):
     """
     Event model
     """
@@ -191,7 +202,7 @@ class Event(BaseFunctions, db.Model):
     suffix = db.Column(db.String(16), nullable=False)
 
 
-class Key(BaseFunctions, db.Model):
+class Key(DictionaryBase, db.Model):
     """
     Key model
     """
@@ -206,7 +217,7 @@ class Key(BaseFunctions, db.Model):
     language = db.Column(db.String(16))
 
 
-class Setting(BaseFunctions, db.Model):
+class Setting(DictionaryBase, db.Model):
     """
     Setting model
     """
@@ -222,7 +233,7 @@ class Setting(BaseFunctions, db.Model):
     db_release = db.Column(db.String(16), nullable=False)
 
 
-class Syllable(BaseFunctions, db.Model):
+class Syllable(DictionaryBase, db.Model):
     """
     Syllable model
     """
@@ -237,7 +248,7 @@ class Syllable(BaseFunctions, db.Model):
     allowed = db.Column(db.Boolean)
 
 
-class Type(BaseFunctions, db.Model):
+class Type(DictionaryBase, db.Model):
     """
     Type model
     """
@@ -253,7 +264,7 @@ class Type(BaseFunctions, db.Model):
     parentable = db.Column(db.Boolean, nullable=False)
 
 
-class Definition(BaseFunctions, db.Model):
+class Definition(DictionaryBase, db.Model):
     """
     Definition model
     """
@@ -289,7 +300,7 @@ class Definition(BaseFunctions, db.Model):
         return False
 
 
-class Word(BaseFunctions, db.Model):
+class Word(DictionaryBase, db.Model):
     """
     Word model
     """
@@ -438,7 +449,7 @@ class Word(BaseFunctions, db.Model):
         return self.get_afx()
 
 
-class WordSpell(BaseFunctions):
+class WordSpell(DictionaryBase):
     """WordSpell model"""
     __tablename__ = t_name_word_spells
     __index_sort_import__ = 9

@@ -7,15 +7,15 @@ Create an application object and database
 """
 
 import os
-
-from flask import Flask
-from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+
 
 from .. import log, root_directory
 
+db = SQLAlchemy()
 
-class Config:
+
+class CLIConfig:
     """
     Configuration object for remote database
     """
@@ -23,16 +23,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-app = Flask(__name__)
-app.config.from_object(Config)
-
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
 from config.postgres import model_dictionary
 
 all_models_pg = sorted(
-    [model for model in model_dictionary.BaseFunctions.__subclasses__()],
+    [model for model in model_dictionary.DictionaryBase.__subclasses__()],
     key=lambda model: model.__index_sort_import__)
 
 models_pg_from_file = [model for model in all_models_pg if model.__load_from_file__]
