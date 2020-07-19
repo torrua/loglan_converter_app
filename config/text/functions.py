@@ -25,12 +25,12 @@ def save_to_file(output_file_path, elements) -> None:
     log.info("%s items exported to %s", len(elements), output_file_path.replace(r"\\", '\\'))
 
 
-def convert_db_to_txt(export_models: list, exporter, export_directory: str = EXPORT_DIRECTORY_PATH_LOCAL):
+def convert_db_to_txt(export_models: list, exporter, output_directory: str = EXPORT_DIRECTORY_PATH_LOCAL):
     """
 
     :param export_models:
     :param exporter:
-    :param export_directory:
+    :param output_directory:
     :return:
     """
 
@@ -40,7 +40,7 @@ def convert_db_to_txt(export_models: list, exporter, export_directory: str = EXP
     for index, export_model in enumerate(export_models, 1):
         log.info("Starting %s export (%s/%s)", export_model.__name__, index, len(export_models))
         elements = exporter(export_model)
-        save_to_file(export_model.export_file_path(export_directory), elements)
+        save_to_file(export_model.export_file_path(output_directory), elements)
         log.info("Ending %s export\n", export_model.__name__)
 
     log.info("ELAPSED TIME IN MINUTES: %s\n", timedelta(minutes=time.monotonic() - start_time))

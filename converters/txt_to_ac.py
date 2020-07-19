@@ -86,7 +86,7 @@ def db_fill_tables(source_path: str, models: list = export_models_ac) -> None:
     log.info("Finish to fill tables with dictionary data\n")
 
 
-def convert_txt_to_ac(db_path: str = AC_PATH, source_path: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:
+def convert_txt_to_ac(db_path: str = AC_PATH, source_directory: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:
     """
     Complete new db generation. It remove previous db with all data
     and fill the new one with data from txt files
@@ -107,7 +107,7 @@ def convert_txt_to_ac(db_path: str = AC_PATH, source_path: str = IMPORT_DIRECTOR
     db_clear_content(db_path=db_path)
 
     log.info("MILESTONE: Fill tables in new DB")
-    db_fill_tables(source_path=source_path)
+    db_fill_tables(source_path=source_directory)
 
     log.info("MILESTONE: Delete backup")
     db_backup_file(db_path=db_path, remove=True)

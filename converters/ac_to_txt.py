@@ -10,6 +10,7 @@ from typing import List
 from config import log
 from config.access import session
 from config.access.ac_model_export_to_txt import export_models_ac
+from config.text import EXPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import convert_db_to_txt
 
 # pylint: disable=E1101
@@ -39,9 +40,12 @@ def export_ac_model_to_list_of_str(export_model) -> List[str]:
     return elements
 
 
-def convert_ac_to_txt():
+def convert_ac_to_txt(output_directory: str = EXPORT_DIRECTORY_PATH_LOCAL):
     """A wrapper for converting an Access database into text files"""
-    convert_db_to_txt(export_models_ac, export_ac_model_to_list_of_str)
+    convert_db_to_txt(
+        export_models=export_models_ac,
+        exporter=export_ac_model_to_list_of_str,
+        output_directory=output_directory)
 
 
 if __name__ == "__main__":

@@ -22,7 +22,6 @@ except ImportError:
 from app import dbc_support
 from tkinter import PhotoImage, messagebox
 import base64
-
 from converters.ac_to_txt import convert_ac_to_txt
 from converters.txt_to_ac import convert_txt_to_ac
 from converters.txt_to_pg import convert_txt_to_pg
@@ -34,17 +33,40 @@ from config import create_app
 
 from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
 
+popup_message_title = 'Loglan Converter'
+msg_success_export = f'Export completed successfully!'
+msg_success = (popup_message_title, msg_success_export)
+
 
 def app_context():
     """
     Configuration object for remote database
     """
+    postgres_uri = dbc_support.postgres_uri.get()
+
+    if not postgres_uri:
+        raise ValueError("DB URI is empty. Please specify the Postgres URI")
 
     class AppConfig:
-        SQLALCHEMY_DATABASE_URI = dbc_support.postgres_uri.get()
+        SQLALCHEMY_DATABASE_URI = postgres_uri
         SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    return create_app(AppConfig).app_context() if AppConfig.SQLALCHEMY_DATABASE_URI else None
+    return create_app(AppConfig).app_context()
+
+
+def convert_with_context(function):
+    def wrapper(*args, **kwargs):
+        try:
+            context = app_context()
+        except ValueError as err:
+            messagebox.showwarning(popup_message_title, err)
+            return
+
+        context.push()
+        function(*args, **kwargs)
+        context.pop()
+
+    return wrapper
 
 
 def get_import_path():
@@ -57,66 +79,41 @@ def get_export_path():
 
 
 def button_convert_ac_to_txt():
-    convert_ac_to_txt()
-    messagebox.showinfo('from access to text', 'Export completed successfully!')
+    destination = get_export_path()
+    convert_ac_to_txt(output_directory=destination)
+    messagebox.showinfo(*msg_success)
 
 
-def button_convert_txt_to_ac(event):
+def button_convert_txt_to_ac():
     source = get_import_path()
-    convert_txt_to_ac(source_path=source)
-    messagebox.showinfo('from text to access', f'Export completed successfully from {source}!')
+    convert_txt_to_ac(source_directory=source)
+    messagebox.showinfo(popup_message_title, f'Export completed successfully from {source}!')
 
 
-def button_convert_txt_to_pg(event):
-    context = app_context()
-    if not context:
-        messagebox.showwarning('from text to postgres', 'DB not found. Please specify the Postgres URI.')
-        return
-    context.push()
-
+@convert_with_context
+def button_convert_txt_to_pg():
     source = get_import_path()
-    convert_txt_to_pg(source_path=source)
-    messagebox.showinfo('from text to postgres', f'Export completed successfully from {source}!')
-    context.pop()
+    convert_txt_to_pg(source_directory=source)
+    messagebox.showinfo(popup_message_title, f'Export completed successfully from {source}!')
 
 
-def button_convert_ac_to_pg(event):
-    context = app_context()
-    if not context:
-        messagebox.showwarning('from access to postgres', 'DB not found. Please specify the Postgres URI.')
-        return
-    context.push()
-
+@convert_with_context
+def button_convert_ac_to_pg():
     convert_ac_to_pg()
-    messagebox.showinfo('from access to postgres', f'Export completed successfully!')
-    context.pop()
+    messagebox.showinfo(*msg_success)
 
 
-def button_convert_pg_to_ac(event):
-    context = app_context()
-    if not context:
-        messagebox.showwarning('from postgres to access', 'DB not found. Please specify the Postgres URI.')
-        return
-    context.push()
-
+@convert_with_context
+def button_convert_pg_to_ac():
     convert_pg_to_ac()
-    messagebox.showinfo('from postgres to access', f'Export completed successfully!')
-    context.pop()
+    messagebox.showinfo(*msg_success)
 
 
+@convert_with_context
 def button_convert_pg_to_txt():
-    context = app_context()
-    if not context:
-        messagebox.showwarning('from postgres to access', 'DB not found. Please specify the Postgres URI.')
-        return
-    context.push()
-    convert_pg_to_txt()
-    messagebox.showinfo('from postgres to text', f'Export completed successfully!')
-    context.pop()
-
-
-def on_change(element):
-    return element.widget.get()
+    destination = get_export_path()
+    convert_pg_to_txt(output_directory=destination)
+    messagebox.showinfo(*msg_success)
 
 
 def vp_start_gui():
@@ -151,10 +148,10 @@ def vp_start_gui():
             dbc_support.from_git.get() else top.import_path.configure(state="disable")
 
     # top.BAT.bind('<ButtonRelease-1>', button_convert_ac_to_txt)
-    top.BTA.bind('<ButtonRelease-1>', button_convert_txt_to_ac)
-    top.BTP.bind('<ButtonRelease-1>', button_convert_txt_to_pg)
-    top.BAP.bind('<ButtonRelease-1>', button_convert_ac_to_pg)
-    top.BPA.bind('<ButtonRelease-1>', button_convert_pg_to_ac)
+    # top.BTA.bind('<ButtonRelease-1>', button_convert_txt_to_ac)
+    # top.BTP.bind('<ButtonRelease-1>', button_convert_txt_to_pg)
+    # top.BAP.bind('<ButtonRelease-1>', button_convert_ac_to_pg)
+    # top.BPA.bind('<ButtonRelease-1>', button_convert_pg_to_ac)
     # top.BPT.bind('<ButtonRelease-1>', button_convert_pg_to_txt)
     top.is_from_github.bind('<Button-1>', trigger_git_local_import)
 
@@ -298,17 +295,17 @@ class MainWindow:
         self.is_from_github.configure(text='''Use text files from Github''')
         self.is_from_github.configure(variable=dbc_support.from_git)
 
-        self.BTP = tk.Button(top)
+        self.BTP = tk.Button(top, command=button_convert_txt_to_pg)
         self.BTP.place(relx=0.034, rely=0.719, height=24, width=147)
         self.BTP.configure(**default_button_configuration)
         self.BTP.configure(text='''text to postgres''')
 
-        self.BTA = tk.Button(top)
+        self.BTA = tk.Button(top, command=button_convert_txt_to_ac)
         self.BTA.place(relx=0.034, rely=0.844, height=24, width=147)
         self.BTA.configure(**default_button_configuration)
         self.BTA.configure(text='''text to access''')
 
-        self.BAP = tk.Button(top)
+        self.BAP = tk.Button(top, command=button_convert_ac_to_pg)
         self.BAP.place(relx=0.36, rely=0.719, height=24, width=147)
         self.BAP.configure(**default_button_configuration)
         self.BAP.configure(text='''access to postgres''')
@@ -318,7 +315,7 @@ class MainWindow:
         self.BAT.configure(**default_button_configuration)
         self.BAT.configure(text='''access to text''')
 
-        self.BPA = tk.Button(top)
+        self.BPA = tk.Button(top, command=button_convert_pg_to_ac)
         self.BPA.place(relx=0.702, rely=0.719, height=24, width=147)
         self.BPA.configure(**default_button_configuration)
         self.BPA.configure(text='''postgres to access''')

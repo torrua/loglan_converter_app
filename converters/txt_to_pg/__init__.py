@@ -43,8 +43,8 @@ def generic_convert_to_pg(dataset: dict):
     log.info("FINISH DB CREATION\n")
 
 
-def convert_txt_to_pg(source_path: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:
-    dataset = get_dataset_for_converters(source_path=source_path, language=DEFAULT_LANGUAGE)
+def convert_txt_to_pg(source_directory: str = IMPORT_DIRECTORY_PATH_LOCAL) -> None:
+    dataset = get_dataset_for_converters(source_path=source_directory, language=DEFAULT_LANGUAGE)
     generic_convert_to_pg(dataset=dataset)
 
 
