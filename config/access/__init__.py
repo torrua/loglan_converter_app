@@ -12,7 +12,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from .. import log, root_directory
+from config import log, root_directory
 
 __all__ = ["ac_create_engine", "Base", "db_get_statistic",
            "EXPORT_AC_DIRECTORY_PATH_LOCAL", "engine",
@@ -76,6 +76,7 @@ def db_get_statistic(db_models: tuple = models_ac_for_stat):
             ac_session.query(model).count(), )
     ac_session.close()
     log.info("Finish to get statistic of imported items\n")
+    engine.dispose()
 
 
 def db_get_property():
@@ -92,4 +93,4 @@ def db_get_property():
 
 
 if __name__ == "__main__":
-    pass
+    db_get_property()

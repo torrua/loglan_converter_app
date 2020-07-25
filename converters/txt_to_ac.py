@@ -9,7 +9,7 @@ import win32com.client
 from sqlalchemy import MetaData
 
 from config import log
-from config.access import ac_create_engine, MDB_FILE_PATH as AC_PATH, db_get_statistic, session, engine
+from config.access import MDB_FILE_PATH as AC_PATH, db_get_statistic, session, engine
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import download_dictionary_file
 from config.access.ac_model_export_to_txt import export_models_ac
@@ -33,7 +33,7 @@ def db_clear_content(db_path):
     :param db_path:
     :return:
     """
-    engine = ac_create_engine(db_path)
+    # engine = ac_create_engine(db_path)
     meta = MetaData()
     meta.reflect(bind=engine)
 
@@ -47,7 +47,6 @@ def db_compress_file(db_path):
     :param db_path:
     :return:
     """
-
     engine.dispose()
     dst_db = db_path.replace(".mdb", "_temp.mdb")
     os_app = win32com.client.Dispatch("Access.Application")

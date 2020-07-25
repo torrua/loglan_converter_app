@@ -3,7 +3,7 @@
 from typing import List
 
 from config import DEFAULT_LANGUAGE, SEPARATOR
-from config.access import session
+from config.access import session, engine
 from config.postgres.model_dictionary import Author, Event, \
     Key, Setting, Syllable, Type, Word, Definition
 from config.access.ac_model_export_to_txt import IOAuthor, \
@@ -30,6 +30,7 @@ def convert_model_to_txt(export_model) -> List[List[str]]:
 
     elements = list(dict.fromkeys([item.export() for item in collection]))
     ac_session.close()
+    engine.dispose()
     return [item.strip().split(SEPARATOR) for item in elements]
 
 
