@@ -8,5 +8,3 @@ def convert_file_to_base64():
         base64_encoded_data = base64.b64encode(binary_file_data)
         base64_message = base64_encoded_data.decode('utf-8')
         print(base64_message)
-
-# pyinstaller -F -i "app\resources\favicon.ico" --hidden-import=pkg_resources.py2_warn -n "Loglan DB Converter" app\dbc.py

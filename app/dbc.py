@@ -147,13 +147,17 @@ def vp_start_gui():
         top.import_path.configure(state="normal") if \
             dbc_support.from_git.get() else top.import_path.configure(state="disable")
 
-    # top.BAT.bind('<ButtonRelease-1>', button_convert_ac_to_txt)
-    # top.BTA.bind('<ButtonRelease-1>', button_convert_txt_to_ac)
-    # top.BTP.bind('<ButtonRelease-1>', button_convert_txt_to_pg)
-    # top.BAP.bind('<ButtonRelease-1>', button_convert_ac_to_pg)
-    # top.BPA.bind('<ButtonRelease-1>', button_convert_pg_to_ac)
-    # top.BPT.bind('<ButtonRelease-1>', button_convert_pg_to_txt)
+    def trigger_pg_buttons_state(event):
+        uri = dbc_support.postgres_uri.get()
+        state = "disable" if not uri else "normal"
+
+        top.BAP.configure(state=state)
+        top.BPA.configure(state=state)
+        top.BPT.configure(state=state)
+        top.BTP.configure(state=state)
+
     top.is_from_github.bind('<Button-1>', trigger_git_local_import)
+    top.postgres_uri.bind('<Return>', trigger_pg_buttons_state)
 
     root.mainloop()
 
@@ -171,6 +175,7 @@ class MainWindow:
         _ana1color = '#d9d9d9'  # X11 color: 'gray85'
         _ana2color = '#ececec'  # Closest X11 color: 'gray92'
         font9 = "-family {Segoe UI} -size 9"
+        pg_buttons_default_state = "disable"
 
         top.geometry("584x320+534+399")
         top.minsize(120, 1)
@@ -299,6 +304,7 @@ class MainWindow:
         self.BTP.place(relx=0.034, rely=0.719, height=24, width=147)
         self.BTP.configure(**default_button_configuration)
         self.BTP.configure(text='''text to postgres''')
+        self.BTP.configure(state=pg_buttons_default_state)
 
         self.BTA = tk.Button(top, command=button_convert_txt_to_ac)
         self.BTA.place(relx=0.034, rely=0.844, height=24, width=147)
@@ -309,6 +315,7 @@ class MainWindow:
         self.BAP.place(relx=0.36, rely=0.719, height=24, width=147)
         self.BAP.configure(**default_button_configuration)
         self.BAP.configure(text='''access to postgres''')
+        self.BAP.configure(state=pg_buttons_default_state)
 
         self.BAT = tk.Button(top, command=button_convert_ac_to_txt)
         self.BAT.place(relx=0.36, rely=0.844, height=24, width=147)
@@ -319,11 +326,13 @@ class MainWindow:
         self.BPA.place(relx=0.702, rely=0.719, height=24, width=147)
         self.BPA.configure(**default_button_configuration)
         self.BPA.configure(text='''postgres to access''')
+        self.BPA.configure(state=pg_buttons_default_state)
 
         self.BPT = tk.Button(top, command=button_convert_pg_to_txt)
         self.BPT.place(relx=0.702, rely=0.844, height=24, width=147)
         self.BPT.configure(**default_button_configuration)
         self.BPT.configure(text='''postgres to text''')
+        self.BPT.configure(state=pg_buttons_default_state)
 
 
 if __name__ == "__main__":
