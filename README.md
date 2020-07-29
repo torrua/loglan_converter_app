@@ -6,8 +6,11 @@ Origin text files are available for downloading from the **LOD** project [materi
 
 ## How to use
 Using this program is simple. Just run the **Loglan DB Converter.exe** file, fill in the required fields and push the button with the desired conversion process. The additionally opened command line console will display the progress of the conversion.
+
 ![Main Window](https://telegra.ph/file/e82dd02fa11b3a8b30068.png)
+
 *Files, Console and App Window*
+
 ## Configuration
 * Postgres URI - the [Postgres] db connection URI  (local or remote)
 * Access Path - the local Access database file path (*.mdb)
