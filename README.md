@@ -18,13 +18,10 @@ Using this program is simple. Just run the **Loglan DB Converter.exe** file, fil
 * Import Path - the directory where files for import are located
 
 ## How to convert 
-✔️Always use the [latest *.mdb file](https://github.com/torrua/LOD/raw/master/source/LoglanDictionary.mdb) from from the **LOD** project for full data compatibility.
-
-⚠️ All existing tables in the destination database completely delete during importing!
-
-By default, the Postgres database is used, but you can configure any other supported by SQLAlchemy.
-
-After starting the conversion process, the application may freeze for a while - this is normal behavior.
+✔️Always use the [latest *.mdb file](https://github.com/torrua/LOD/raw/master/source/LoglanDictionary.mdb) from from the **LOD** project for full data compatibility.<br>
+⚠️ All existing tables in the destination database completely delete during importing!<br>
+By default, the Postgres database is used, but you can configure any other supported by SQLAlchemy.<br>
+After starting the conversion process, the application may freeze for a while - this is normal behavior.<br>
 ### from txt → db
 To import dictionary data from text files into a database, you must first define **Import Path** (or select "Use text files from Github") and **Postgres URI**.
 
