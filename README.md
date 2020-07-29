@@ -1,18 +1,23 @@
 # Loglan ♻️ Converter
 ## Description
-The **Loglan Converter** project allows you to import Loglan dictionary from text files into a database, and vice versa - export from a database back to text files. Origin text files are available for download in the **LOD** project [materials](https://raw.githubusercontent.com/torrua/LOD/master/tables/).
-The program automatically downloads latest ones, so it is not necessary to do it manually.
+The **Loglan Converter** project allows you to import Loglan dictionary from text files into a databases, and vice versa - export from an Access (*.mdb file) or remote database back to text files or even directly move from db to another. 
 
-## How to import (txt → db)
-To import dictionary data into a database, you must first define the environment variable ``LOD_DATABASE_URL`` with target database URI. By default, the Postgres database is used, but you can configure any other supported by SQLAlchemy.
+Origin text files are available for downloading from the **LOD** project [materials](https://raw.githubusercontent.com/torrua/LOD/master/tables/). Since program automatically downloads latest ones, it is possible but not necessary to do it manually.
 
-⚠️ All existing tables in the database will be completely deleted before importing.
+## How to use
+Using this program is simple. Just run the **Loglan DB Converter.exe** file, fill in the required fields and push the button with the desired conversion process. The additionally opened command line console will display the progress of the conversion.
+![Main Window](https://telegra.ph/file/e82dd02fa11b3a8b30068.png)
+*Files, Console and App Window*
+## Configuration
+* Postgres URI - the [Postgres] db connection URI  (local or remote)
+* Access Path - the local Access database file path (*.mdb)
+* Export Path - the directory where exported files will be located
+* Import Path - the directory where files for import are located
 
-Call the function ``import_database.db_functions_generate.db_recreate_db()`` to start the import process.
+## How to
+### convert from txt →  db
+⚠️ All existing tables in the database completely delete during importing!
+To import dictionary data from text files into a database, you must first define **Import Path** (or select "Use text files from Github") and **Postgres URI**. By default, the Postgres database is used, but you can configure any other supported by SQLAlchemy.
 
-## How to export (db → txt)
-To export data from the dictionary back to text files, you must first define the environment variable ``LOD_DATABASE_URL`` with the dictionary database URI, the variable ``EXPORT_DIRECTORY_PATH`` with the export folder location and a set of variables with filenames (``FILE_NAME_AUTHOR``, ``FILE_NAME_LEXEVENT``, ``FILE_NAME_PERMISSIBLEINITIALCC``, ``FILE_NAME_SETTINGS``, ``FILE_NAME_TYPE``, ``FILE_NAME_WORDDEFINITION``, ``FILE_NAME_WORDS``, ``FILE_NAME_WORDSPELL`` and ``FILE_NAME_XWORD``).
-
-⚠️ All existing files in the export folder with matching names will be overwritten during export.
-
-Call the function``export_database.db_functions_export.export_db()`` to start the export process.
+### convert from txt → access
+To import dictionary data from text files into a Access file, you must first define **Import Path** (or select "Use text files from Github") and **Access URI**. You should use [latest *.mdb file](https://github.com/torrua/LOD/raw/master/source/LoglanDictionary.mdb) from from the **LOD** project materials.
