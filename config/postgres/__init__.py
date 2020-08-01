@@ -51,7 +51,7 @@ def db_get_property():
     """
     :return:
     """
-    objects = model_dictionary.Word.query.all()
+    objects = model_dictionary.ComplexWord.query.all()
     objects_str = [obj.rank for obj in objects]
     print(len(objects_str))
     maxi = max(objects_str, key=len)

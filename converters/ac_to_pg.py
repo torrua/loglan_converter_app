@@ -4,8 +4,8 @@ from typing import List
 
 from config import DEFAULT_LANGUAGE, SEPARATOR
 from config.access import session, engine
-from config.postgres.model_dictionary import Author, Event, \
-    Key, Setting, Syllable, Type, Word, Definition
+from config.postgres.model_dictionary import ComplexAuthor, ComplexEvent, \
+    ComplexKey, ComplexSetting, ComplexSyllable, ComplexType, ComplexWord, ComplexDefinition
 from config.access.ac_model_export_to_txt import IOAuthor, \
     IOEvent, IODefinition, IOSyllable, IOSetting, IOWord, \
     IOWordSpell, IOType
@@ -36,14 +36,14 @@ def convert_model_to_txt(export_model) -> List[List[str]]:
 
 def get_txt_dataset(language: str):
     return {
-        Author.__name__: (convert_model_to_txt(IOAuthor),),
-        Event.__name__: (convert_model_to_txt(IOEvent),),
-        Key.__name__: (convert_model_to_txt(IODefinition), language,),
-        Setting.__name__: (convert_model_to_txt(IOSetting),),
-        Syllable.__name__: (convert_model_to_txt(IOSyllable),),
-        Type.__name__: (convert_model_to_txt(IOType),),
-        Word.__name__: (convert_model_to_txt(IOWord), convert_model_to_txt(IOWordSpell),),
-        Definition.__name__: (convert_model_to_txt(IODefinition), language), }
+        ComplexAuthor.__name__: (convert_model_to_txt(IOAuthor),),
+        ComplexEvent.__name__: (convert_model_to_txt(IOEvent),),
+        ComplexKey.__name__: (convert_model_to_txt(IODefinition), language,),
+        ComplexSetting.__name__: (convert_model_to_txt(IOSetting),),
+        ComplexSyllable.__name__: (convert_model_to_txt(IOSyllable),),
+        ComplexType.__name__: (convert_model_to_txt(IOType),),
+        ComplexWord.__name__: (convert_model_to_txt(IOWord), convert_model_to_txt(IOWordSpell),),
+        ComplexDefinition.__name__: (convert_model_to_txt(IODefinition), language), }
 
 
 def convert_ac_to_pg() -> None:

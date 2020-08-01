@@ -4,37 +4,37 @@ Export extensions of LOD database models
 Add export() function to db object for returning its text string presentation
 """
 
-from config.postgres.model_dictionary import Author, Event, Syllable, Setting, Type, Word, Definition
+from config.postgres.model_dictionary import ComplexAuthor, ComplexEvent, ComplexSyllable, ComplexSetting, ComplexType, ComplexWord, ComplexDefinition
 
 
-class ExportAuthor(Author):
+class ExportComplexAuthor(ComplexAuthor):
     def export(self):
         return f"{self.abbreviation}@{self.full_name}@{self.notes}"
 
 
-class ExportEvent(Event):
+class ExportComplexEvent(ComplexEvent):
     def export(self):
         return f"{self.id}@{self.name}" \
                f"@{self.date.strftime('%m/%d/%Y')}@{self.definition}" \
                f"@{self.annotation}@{self.suffix}"
 
 
-class ExportSyllable(Syllable):
+class ExportComplexSyllable(ComplexSyllable):
     def export(self):
         return f"{self.name}@{self.type}@{self.allowed}"
 
 
-class ExportSetting(Setting):
+class ExportComplexSetting(ComplexSetting):
     def export(self):
         return f"{self.date.strftime('%d.%m.%Y %H:%M:%S')}@{self.db_version}@{self.last_word_id}@{self.db_release}"
 
 
-class ExportType(Type):
+class ExportComplexType(ComplexType):
     def export(self):
         return f"{self.type}@{self.type_x}@{self.group}@{self.parentable}"
 
 
-class ExportWord(Word):
+class ExportComplexWord(ComplexWord):
     def export(self):
         """
                 Prepare Word data for exporting to text file
@@ -69,7 +69,7 @@ class ExportWord(Word):
                f"@{origin}@{origin_x}@{usedin}@{tid_old}"
 
 
-class ExportDefinition(Definition):
+class ExportComplexDefinition(ComplexDefinition):
     def export(self):
         return f"{self.source_word.id_old}@{self.position}@{self.usage if self.usage else ''}" \
                f"@{self.slots if self.slots else ''}" \
@@ -77,7 +77,7 @@ class ExportDefinition(Definition):
                f"@{self.body}@@{self.case_tags if self.case_tags else ''}"
 
 
-class ExportWordSpell(Word):
+class ExportComplexWordSpell(ComplexWord):
     def export(self):
         """
         Prepare Word Spell data for exporting to text file
@@ -90,5 +90,5 @@ class ExportWordSpell(Word):
 
 
 export_models_pg = (
-    ExportAuthor, ExportDefinition, ExportEvent, ExportSetting,
-    ExportSyllable, ExportType, ExportWord, ExportWordSpell, )
+    ExportComplexAuthor, ExportComplexDefinition, ExportComplexEvent, ExportComplexSetting,
+    ExportComplexSyllable, ExportComplexType, ExportComplexWord, ExportComplexWordSpell, )

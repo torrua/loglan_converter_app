@@ -5,8 +5,8 @@ Module for adding dictionary data to the database
 
 from config import log, SEPARATOR, DEFAULT_LANGUAGE
 from config.postgres import db, models_pg_from_file, models_pg_to_db
-from config.postgres.model_dictionary import Author, Event, \
-    Definition, Setting, Syllable, Type, Word, WordSpell, Key
+from config.postgres.model_dictionary import ComplexAuthor, ComplexEvent, \
+    ComplexDefinition, ComplexSetting, ComplexSyllable, ComplexType, ComplexWord, ComplexWordSpell, ComplexKey
 from converters.txt_to_pg.converters_txt_to_pg import converters_pg
 from config.text.functions import download_dictionary_file
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
@@ -43,14 +43,14 @@ def get_txt_dataset(source_path: str):
 def get_dataset_for_converters(source_path: str, language: str) -> dict:
     txt_dataset = get_txt_dataset(source_path)
     return {
-        Author.__name__: (txt_dataset[Author.__name__],),
-        Event.__name__: (txt_dataset[Event.__name__],),
-        Key.__name__: (txt_dataset[Definition.__name__], language),
-        Setting.__name__: (txt_dataset[Setting.__name__],),
-        Syllable.__name__: (txt_dataset[Syllable.__name__],),
-        Type.__name__: (txt_dataset[Type.__name__],),
-        Word.__name__: (txt_dataset[Word.__name__], txt_dataset[WordSpell.__name__]),
-        Definition.__name__: (txt_dataset[Definition.__name__], language), }
+        ComplexAuthor.__name__: (txt_dataset[ComplexAuthor.__name__],),
+        ComplexEvent.__name__: (txt_dataset[ComplexEvent.__name__],),
+        ComplexKey.__name__: (txt_dataset[ComplexDefinition.__name__], language),
+        ComplexSetting.__name__: (txt_dataset[ComplexSetting.__name__],),
+        ComplexSyllable.__name__: (txt_dataset[ComplexSyllable.__name__],),
+        ComplexType.__name__: (txt_dataset[ComplexType.__name__],),
+        ComplexWord.__name__: (txt_dataset[ComplexWord.__name__], txt_dataset[ComplexWordSpell.__name__]),
+        ComplexDefinition.__name__: (txt_dataset[ComplexDefinition.__name__], language), }
 
 
 def db_fill_tables(dataset: dict, converters: tuple = converters_pg, ) -> None:

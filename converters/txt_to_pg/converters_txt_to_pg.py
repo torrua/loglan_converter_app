@@ -8,32 +8,32 @@ import re
 from datetime import datetime
 from typing import List
 from config import log
-from config.postgres.model_dictionary import Author, Event, \
-    Definition, Setting, Syllable, Type, Word, Key
+from config.postgres.model_dictionary import ComplexAuthor, ComplexEvent, \
+    ComplexDefinition, ComplexSetting, ComplexSyllable, ComplexType, ComplexWord, ComplexKey
 
 
-def converter_authors(authors: List[List[str]]) -> List[Author]:
+def converter_authors(authors: List[List[str]]) -> List[ComplexAuthor]:
     """
     Convert authors' txt data to DB objects
     :param authors: List of authors received from a text file
         using function convert_file_to_list
     :return: List of Author object(s)
     """
-    return [Author({
+    return [ComplexAuthor({
         "abbreviation": item[0],
         "full_name": item[1],
         "notes": item[2]})
             for item in authors]
 
 
-def converter_events(events: List[List[str]]) -> List[Event]:
+def converter_events(events: List[List[str]]) -> List[ComplexEvent]:
     """
     Convert events' data (dictionary versions) to DB objects
     :param events: List of events received from a text file
         using function convert_file_to_list
     :return: List of Event object(s)
     """
-    return [Event({
+    return [ComplexEvent({
         "id": int(item[0]),
         "date": datetime.strptime(item[2], '%m/%d/%Y'),
         "name": item[1],
@@ -43,14 +43,14 @@ def converter_events(events: List[List[str]]) -> List[Event]:
     }) for item in events]
 
 
-def converter_settings(settings: List[List[str]]) -> List[Setting]:
+def converter_settings(settings: List[List[str]]) -> List[ComplexSetting]:
     """
     Convert settings' data to DB objects
     :param settings: List of settings sets received from a text file
         using function convert_file_to_list
     :return: List of Setting object(s)
     """
-    return [Setting({
+    return [ComplexSetting({
         "date": datetime.strptime(item[0], '%d.%m.%Y %H:%M:%S'),
         "db_version": int(item[1]),
         "last_word_id": int(item[2]),
@@ -58,28 +58,28 @@ def converter_settings(settings: List[List[str]]) -> List[Setting]:
     }) for item in settings]
 
 
-def converter_syllables(syllables: List[List[str]]) -> List[Syllable]:
+def converter_syllables(syllables: List[List[str]]) -> List[ComplexSyllable]:
     """
     Convert syllables' data to DB objects
     :param syllables: List of syllables received from a text file
         using function convert_file_to_list
     :return: List of Syllable object(s)
     """
-    return [Syllable({
+    return [ComplexSyllable({
         "name": item[0],
         "type": item[1],
         "allowed": ast.literal_eval(item[2]),
     }) for item in syllables]
 
 
-def converter_types(types: List[List[str]]) -> List[Type]:
+def converter_types(types: List[List[str]]) -> List[ComplexType]:
     """
     Convert words types' data to DB objects
     :param types: List of words types received from a text file
         using function convert_file_to_list
     :return: List of Type object(s)
     """
-    return [Type({
+    return [ComplexType({
         "type": item[0],
         "type_x": item[1],
         "group": item[2],
@@ -87,7 +87,7 @@ def converter_types(types: List[List[str]]) -> List[Type]:
     }) for item in types]
 
 
-def converter_words(words: List[List[str]], spell: List[List[str]]) -> List[Word]:
+def converter_words(words: List[List[str]], spell: List[List[str]]) -> List[ComplexWord]:
     """
     Convert words' data to DB objects
     ! This process requires that Type objects were already added to DB
@@ -128,7 +128,7 @@ def converter_words(words: List[List[str]], spell: List[List[str]]) -> List[Word
 
         return str_notes if str_notes else None
 
-    types = dict((item.type, item.id) for item in Type.query.all())
+    types = dict((item.type, item.id) for item in ComplexType.query.all())
 
     dict_of_word_names_as_dict = {(index, int(item[0])): {
         "name": item[1],
@@ -153,7 +153,7 @@ def converter_words(words: List[List[str]], spell: List[List[str]]) -> List[Word
     dowdad = dict_of_word_data_as_dict
     downad = dict_of_word_names_as_dict
 
-    words = [Word({
+    words = [ComplexWord({
         "name": downad[index]["name"],
         "event_start_id": downad[index]["event_start_id"],
         "event_end_id": downad[index]["event_end_id"],
@@ -173,7 +173,7 @@ def converter_words(words: List[List[str]], spell: List[List[str]]) -> List[Word
 
 
 def converter_definitions(
-        definitions: List[List[str]], language: str) -> List[Definition]:
+        definitions: List[List[str]], language: str) -> List[ComplexDefinition]:
     """
     Convert words definitions' data to DB objects
     :param definitions: List of definitions received from a text file
@@ -191,8 +191,8 @@ def converter_definitions(
 
     all_definitions = []
     for item in definitions:
-        for word in Word.query.filter(Word.id_old == int(item[0])).all():
-            all_definitions.append(Definition({
+        for word in ComplexWord.query.filter(ComplexWord.id_old == int(item[0])).all():
+            all_definitions.append(ComplexDefinition({
                 "word_id": word.id,
                 "position": int(item[1]),
                 "usage": item[2],
@@ -206,7 +206,7 @@ def converter_definitions(
 
 
 def converter_keys(
-        definitions: List[List[str]], language: str) -> List[Key]:
+        definitions: List[List[str]], language: str) -> List[ComplexKey]:
     """
     Convert all unique keys received from words' definitions to DB objects
     :param definitions: List of definitions received from a text file
@@ -246,7 +246,7 @@ def converter_keys(
         log.warning("Definitions without keys:\t%s", without_keys_count)
     log.info("Finish collecting dictionary keys\n")
 
-    return [Key({"word": key, "language": language, }) for key in unique_keys]
+    return [ComplexKey({"word": key, "language": language, }) for key in unique_keys]
 
 
 converters_pg = (
