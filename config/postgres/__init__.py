@@ -8,9 +8,9 @@ Create an application object and database
 
 import os
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import create_engine
 
-
-from .. import log, root_directory
+from config import log, root_directory
 
 db = SQLAlchemy()
 
@@ -58,5 +58,16 @@ def db_get_property():
     print(maxi, len(maxi))
 
 
-if __name__ == "__main__":
-    pass
+def check_db_connection(db_uri):
+    """
+    :param db_uri:
+    :return:
+    """
+    try:
+        eng = create_engine(db_uri)
+        eng.execute("SELECT 1")
+    except:
+        return False
+    else:
+        eng.dispose()
+        return True

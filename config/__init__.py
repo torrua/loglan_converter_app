@@ -12,7 +12,8 @@ from flask import Flask
 
 logging.basicConfig(
     format='%(message)s',
-    level=logging.INFO,
+    # format='%(filename)s [LINE:%(lineno)d]\t[%(asctime)s] %(levelname)-s\t%(funcName)s() \t\t%(message)s',
+    level=logging.DEBUG,
     datefmt="%y-%m-%d %H:%M:%S")
 
 log = logging.getLogger(__name__)

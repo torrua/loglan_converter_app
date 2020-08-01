@@ -13,7 +13,7 @@ from typing import List
 import requests
 
 from config import log, SEPARATOR
-from config.text import EXPORT_DIRECTORY_PATH_LOCAL
+from config.text import EXPORT_DIRECTORY_PATH_LOCAL, root_directory
 
 
 def save_to_file(output_file_path, elements) -> None:
@@ -68,3 +68,15 @@ def download_dictionary_file(url: str, model_name: str,
 
     log.debug("Finish to get '%s' content\n", model_name)
     return [file_line.strip().split(separator) for file_line in lines if file_line]
+
+
+def download_file(source, output_directory: str = root_directory, alias_name: str = None):
+    import urllib.request
+    import re
+    filename = alias_name if alias_name else re.search(r"[ \w-]+\.\w+$", source)[0]
+    urllib.request.urlretrieve(source, f"{output_directory}{filename}")
+
+
+if __name__ == "__main__":
+    file = "https://raw.githubusercontent.com/torrua/LOD/master/tables/LexEvent.txt"
+    download_file(file)
