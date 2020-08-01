@@ -6,10 +6,8 @@ Models of LOD database
 """
 
 from __future__ import annotations
-
 from datetime import datetime
 from typing import Set, List
-
 from config.postgres import db
 
 t_name_authors = "authors"
@@ -40,13 +38,13 @@ t_connect_keys = db.Table(
 
 
 class DBBase:
-
+    """Common methods and attributes for basic models"""
     created = db.Column(db.TIMESTAMP, default=datetime.now(), nullable=False)
     updated = db.Column(db.TIMESTAMP, onupdate=db.func.now())
     __table__ = None
     __mapper__ = None
 
-    def save(self):
+    def save(self) -> None:
         """
         Add record to DB
         :return:
@@ -54,7 +52,7 @@ class DBBase:
         db.session.add(self)
         db.session.commit()
 
-    def update(self, data):
+    def update(self, data) -> None:
         """
         Update record in DB
         :param data:
@@ -64,7 +62,7 @@ class DBBase:
             setattr(self, key, item)
         db.session.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         """
         Delete record from DB
         :return:
@@ -73,7 +71,7 @@ class DBBase:
         db.session.commit()
 
     @classmethod
-    def get_all(cls) -> list:
+    def get_all(cls) -> List:
         """
         Get all model objects from DB
         :return:
