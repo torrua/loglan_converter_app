@@ -52,7 +52,7 @@ def ac_create_all():
     Base.metadata.create_all(engine)
 
 
-from config.access import model_dictionary
+from config.access import model_base
 
 models_ac = Base.__subclasses__()
 models_ac_for_stat = tuple(models_ac)
@@ -84,7 +84,7 @@ def db_get_property():
     :return:
     """
     ac_session = session()
-    objects = ac_session.query(model_dictionary.AccessWord).all()
+    objects = ac_session.query(model_base.AccessWord).all()
     objects_str = [obj.rank for obj in objects if obj.rank]
     print(len(objects_str))
     maxi = max(objects_str, key=len)

@@ -9,7 +9,6 @@ Create an application object and database
 import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-
 from config import log, root_directory
 
 db = SQLAlchemy()
@@ -23,10 +22,10 @@ class CLIConfig:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 
-from config.postgres import model_dictionary
+from config.postgres import model_base
 
 all_models_pg = sorted(
-    [model for model in model_dictionary.DictionaryBase.__subclasses__()],
+    [model for model in model_base.DictionaryBase.__subclasses__()],
     key=lambda model: model.__index_sort_import__)
 
 models_pg_from_file = [model for model in all_models_pg if model.__load_from_file__]
@@ -51,7 +50,7 @@ def db_get_property():
     """
     :return:
     """
-    objects = model_dictionary.ComplexWord.query.all()
+    objects = model_base.Word.query.all()
     objects_str = [obj.rank for obj in objects]
     print(len(objects_str))
     maxi = max(objects_str, key=len)

@@ -12,7 +12,7 @@ from config import log
 from config.access import MDB_FILE_PATH as AC_PATH, db_get_statistic, session, engine
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import download_dictionary_file
-from config.access.ac_model_export_to_txt import export_models_ac
+from config.access.model_export import export_models_ac
 
 
 def db_backup_file(db_path: str, suffix: str = "backup", remove: bool = False):

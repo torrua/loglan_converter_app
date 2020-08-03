@@ -10,7 +10,7 @@ from typing import List
 from config import log
 from config.text import EXPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import convert_db_to_txt
-from config.postgres.pg_model_export_to_txt import export_models_pg
+from config.postgres.model_export import export_models_pg
 
 # pylint: disable=E1101
 

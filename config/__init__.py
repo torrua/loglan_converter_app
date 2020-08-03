@@ -37,7 +37,8 @@ def create_app(config):
     app.config.from_object(config)
 
     # db initialization
-    from config.postgres.model_dictionary import db
+    from config.postgres.model_base import db
+
     db.init_app(app)
     # db.create_all(app=app) when use need to re-initialize db
 

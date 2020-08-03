@@ -6,9 +6,14 @@ Models of LOD database
 """
 
 from __future__ import annotations
+
 from datetime import datetime
 from typing import Set, List
+
 from config.postgres import db
+from config.postgres.model_convert import ConvertAuthor, ConvertEvent, \
+    ConvertKey, ConvertSetting, ConvertSyllable, ConvertType, \
+    ConvertDefinition, ConvertWord, ConvertWordSpell
 
 t_name_authors = "authors"
 t_name_events = "events"
@@ -35,6 +40,36 @@ t_connect_keys = db.Table(
     'connect_keys', db.metadata,
     db.Column('KID', db.ForeignKey(f'{t_name_keys}.id'), primary_key=True),
     db.Column('DID', db.ForeignKey(f'{t_name_definitions}.id'), primary_key=True), )
+
+
+class DictionaryBase:
+    """
+    Base class for common methods
+    """
+
+    def __repr__(self) -> str:
+        return str(self.__dict__)
+
+    def __init__(self, *initial_data, **kwargs):
+        for dictionary in initial_data:
+            for key in dictionary:
+                setattr(self, key, dictionary[key])
+        for key in kwargs:
+            setattr(self, key, kwargs[key])
+
+    def export(self):
+        """
+        Export record data from DB
+        Should be redefine in model's class
+        :return:
+        """
+
+    def import_(self):
+        """
+        Import txt data to DB
+        Should be redefine in model's class
+        :return:
+        """
 
 
 class DBBase:
@@ -122,7 +157,7 @@ class DBBase:
         return set(cls.all_attributes() - cls.foreign_keys())
 
 
-class Author(DBBase, db.Model):
+class Author(db.Model, DictionaryBase, DBBase, ConvertAuthor):
     """
     Author model
     """
@@ -134,7 +169,7 @@ class Author(DBBase, db.Model):
     notes = db.Column(db.String(128))
 
 
-class Event(DBBase, db.Model):
+class Event(db.Model, DictionaryBase, DBBase, ConvertEvent):
     """
     Event model
     """
@@ -148,7 +183,7 @@ class Event(DBBase, db.Model):
     suffix = db.Column(db.String(16), nullable=False)
 
 
-class Key(DBBase, db.Model):
+class Key(db.Model, DictionaryBase, DBBase, ConvertKey):
     """
     Key model
     """
@@ -159,7 +194,7 @@ class Key(DBBase, db.Model):
     language = db.Column(db.String(16))
 
 
-class Setting(DBBase, db.Model):
+class Setting(db.Model, DictionaryBase, DBBase, ConvertSetting):
     """
     Setting model
     """
@@ -172,7 +207,7 @@ class Setting(DBBase, db.Model):
     db_release = db.Column(db.String(16), nullable=False)
 
 
-class Syllable(DBBase, db.Model):
+class Syllable(db.Model, DictionaryBase, DBBase, ConvertSyllable):
     """
     Syllable model
     """
@@ -184,7 +219,7 @@ class Syllable(DBBase, db.Model):
     allowed = db.Column(db.Boolean)
 
 
-class Type(DBBase, db.Model):
+class Type(db.Model, DictionaryBase, DBBase, ConvertType):
     """
     Type model
     """
@@ -197,7 +232,7 @@ class Type(DBBase, db.Model):
     parentable = db.Column(db.Boolean, nullable=False)
 
 
-class Definition(DBBase, db.Model):
+class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
     """
     Definition model
     """
@@ -230,7 +265,7 @@ class Definition(DBBase, db.Model):
         return False
 
 
-class Word(DBBase, db.Model):
+class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
     """
     Word model
     """
@@ -376,6 +411,6 @@ class Word(DBBase, db.Model):
         return self.get_afx()
 
 
-class WordSpell:
+class WordSpell(DictionaryBase, ConvertWordSpell):
     """WordSpell model"""
     __tablename__ = t_name_word_spells

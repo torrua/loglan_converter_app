@@ -6,7 +6,7 @@ Add export() function to db object for returning its text string presentation
 import ast
 from datetime import datetime
 from typing import List
-from config.access.model_dictionary import AccessAuthor, AccessEvent, \
+from config.access.model_base import AccessAuthor, AccessEvent, \
     AccessSetting, AccessSyllable, AccessType, AccessWord, AccessDefinition, AccessWordSpell
 
 

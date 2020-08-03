@@ -9,7 +9,7 @@ from typing import List
 
 from config import log
 from config.access import session, engine
-from config.access.ac_model_export_to_txt import export_models_ac
+from config.access.model_export import export_models_ac
 from config.text import EXPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import convert_db_to_txt
 

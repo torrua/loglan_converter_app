@@ -14,7 +14,7 @@ from converters.txt_to_ac import convert_txt_to_ac
 
 # TODO Unify logging and resulting
 
-SELECTOR = 4
+TESTS = [2, 3, 4, 6]
 
 if __name__ == "__main__":
 
@@ -22,20 +22,22 @@ if __name__ == "__main__":
     from config.postgres import CLIConfig
 
     with create_app(CLIConfig).app_context():
-        if SELECTOR == 1:
-            convert_ac_to_txt()
 
-        elif SELECTOR == 2:
-            convert_ac_to_pg()
+        for SELECTOR in TESTS:
+            if SELECTOR == 1:
+                convert_ac_to_txt()
 
-        elif SELECTOR == 3:
-            convert_pg_to_txt()
+            elif SELECTOR == 2:
+                convert_ac_to_pg()
 
-        elif SELECTOR == 4:
-            convert_pg_to_ac()
+            elif SELECTOR == 3:
+                convert_pg_to_txt()
 
-        elif SELECTOR == 5:
-            convert_txt_to_ac()
+            elif SELECTOR == 4:
+                convert_pg_to_ac()
 
-        else:
-            convert_txt_to_pg()
+            elif SELECTOR == 5:
+                convert_txt_to_ac()
+
+            else:
+                convert_txt_to_pg()

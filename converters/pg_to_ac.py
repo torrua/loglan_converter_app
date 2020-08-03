@@ -6,10 +6,10 @@ from datetime import timedelta
 from config import log, SEPARATOR
 from config.access import MDB_FILE_PATH as AC_PATH, db_get_statistic, session
 
-from config.postgres.pg_model_export_to_txt import export_models_pg
+from config.postgres.model_export import export_models_pg
 from converters.pg_to_txt import export_pg_model_to_list_of_str
 from converters.txt_to_ac import db_backup_file, db_clear_content, db_compress_file
-from config.access.ac_model_export_to_txt import export_models_ac
+from config.access.model_export import export_models_ac
 
 
 def get_data_from_schema():
