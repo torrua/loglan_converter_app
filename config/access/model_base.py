@@ -115,6 +115,7 @@ class AccessType(Base, BaseFunctions):
     type_x = Column(String(16), nullable=False)
     group = Column(String(16), nullable=False)
     parentable = Column(Boolean, nullable=False)
+    description = Column(String(255), nullable=True)
 
 
 class AccessWord(Base, BaseFunctions):

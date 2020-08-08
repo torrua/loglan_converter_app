@@ -73,7 +73,8 @@ class IOSetting(AccessSetting):
 
 class IOType(AccessType):
     def export(self):
-        return f"{self.type}@{self.type_x}@{self.group}@{self.parentable}"
+        return f"{self.type}@{self.type_x}@{self.group}@{self.parentable}" \
+               f"@{self.description if self.description else ''}"
 
     @staticmethod
     def import_(item: List[str]):
@@ -82,6 +83,7 @@ class IOType(AccessType):
             "type_x": item[1],
             "group": item[2] if item[2] else None,
             "parentable": ast.literal_eval(item[3]),
+            "description": item[4] if item[4] else '',
         }
 
 

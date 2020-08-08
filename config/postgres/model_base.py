@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=R0903, E1101, C0103
 
 """
 Models of LOD database
 """
 
 from __future__ import annotations
-
+import re
 from datetime import datetime
-from typing import Set, List
+from typing import Set, List, Union, Optional
+from sqlalchemy import exists
 
 from config.postgres import db
 from config.postgres.model_convert import ConvertAuthor, ConvertEvent, \
@@ -42,15 +42,16 @@ t_connect_keys = db.Table(
     db.Column('DID', db.ForeignKey(f'{t_name_definitions}.id'), primary_key=True), )
 
 
-class DictionaryBase:
+class InitBase:
     """
-    Base class for common methods
+    Init class for common methods
     """
 
     def __repr__(self) -> str:
         return str(self.__dict__)
 
     def __init__(self, *initial_data, **kwargs):
+        # TODO Check creation from dictionary
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
@@ -70,6 +71,10 @@ class DictionaryBase:
         Should be redefine in model's class
         :return:
         """
+
+
+class DictionaryBase(InitBase):
+    pass
 
 
 class DBBase:
@@ -230,6 +235,7 @@ class Type(db.Model, DictionaryBase, DBBase, ConvertType):
     type_x = db.Column(db.String(16), nullable=False)
     group = db.Column(db.String(16))
     parentable = db.Column(db.Boolean, nullable=False)
+    description = db.Column(db.String(255))
 
 
 class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
@@ -249,20 +255,138 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
     language = db.Column(db.String(16))
     notes = db.Column(db.String(255))
 
+    CASE_TAGS = ["B", "C", "D", "F", "G", "J", "K", "N", "P", "S", "V", ]
+
     keys = db.relationship(Key.__name__, secondary=t_connect_keys,
                            backref="definitions", lazy='dynamic')
 
-    def add_key(self, key: Key) -> bool:
+    def link_keys_from_list_of_str(
+            self, source: List[str],
+            language: str = None) -> List[Key]:
         """
-        Connect Key object with Definition object
-        :param key: Key object
-        :return:
+        Linking a list of vernacular words with Definition
+        Only new words will be linked, skipping those that were previously linked
+
+        :param source: List of words on vernacular language
+        :param language: Language of source words
+        :return: List of linked Key objects
         """
 
-        if key and not self.keys.filter(Key.word == key.word).count() > 0:
+        language = language if language else self.language
+
+        new_keys = Key.query.filter(
+            Key.word.in_(source),
+            Key.language == language,
+            ~exists().where(Key.id == self.keys.subquery().c.id),
+        ).all()
+
+        self.keys.extend(new_keys) if new_keys else None
+        return new_keys
+
+    def link_key_from_str(self, word: str, language: str = None) -> Optional[Key]:
+        """
+        Linking vernacular word with Definition object
+        Only new word will be linked, skipping this that was previously linked
+
+        :param word: Word on vernacular language
+        :param language: Words language
+        :return: Linked Key object or None if it were already linked
+        """
+        language = language if language else self.language
+        result = self.link_keys_from_list_of_str(source=[word, ], language=language)
+        return result[0] if result else None
+
+    def link_keys_from_list_of_obj(self, source: List[Key]) -> List[Key]:
+        """
+        Linking Key objects with Definition
+        Only new Keys will be linked, skipping those that were previously linked
+
+        :param source: List of Key objects from db
+        :return: List of linked Key objects
+        """
+        new_keys = list(set(source) - set(self.keys))
+        self.keys.extend(new_keys) if new_keys else None
+        return new_keys
+
+    def link_key_from_obj(self, key: Key) -> Optional[Key]:
+        """
+        Linking Key object with Definition object
+        It will be skipped if the Key has already been linked before
+        :param key: Key objects from db
+        :return: linked Key object or None if it were already linked
+        """
+        if key and not self.keys.filter(Key.id == key.id).count() > 0:
             self.keys.append(key)
-            return True
-        return False
+            return key
+        return None
+
+    def link_keys_from_definition_body(self, language: str = None, pattern: str = None) -> List[Key]:
+        """
+        Extract and link keys from Definition's body
+        :param language: Language of Definition's keys
+        :param pattern: Regex pattern for extracting keys from the Definition's body
+        :return: List of linked Key objects
+        """
+        language = language if language else self.language
+        pattern = r"(?<=\«)(.+?)(?=\»)" if not pattern else pattern
+        keys = re.findall(pattern, self.body)
+        return self.link_keys_from_list_of_str(source=keys, language=language)
+
+    def link_keys(
+            self, source: Union[List[Key], List[str], Key, str, None] = None,
+            language: str = None, pattern: str = None) -> Union[Key, List[Key]]:
+        """
+        Universal method for linking all available types of key sources with Definition
+
+        :param source: Could be a str, Key, List of Keys or str, or None
+        If no source is provided, keys will be extracted from the Definition's body
+        If source is a string or a list of strings, the language of the keys must be specified
+        TypeError will be raised if the source contains inappropriate data
+        :param language: Language of Definition's keys
+        :param pattern: Regex pattern for extracting keys from the Definition's body
+        :return: None, Key, or List of Keys
+        """
+
+        language = language if language else self.language
+
+        if not source:
+            return self.link_keys_from_definition_body(language=language, pattern=pattern)
+
+        if isinstance(source, str):
+            return self.link_key_from_str(word=source, language=language)
+
+        if isinstance(source, Key):
+            return self.link_key_from_obj(key=source)
+
+        if isinstance(source, list):
+
+            if all(isinstance(item, Key) for item in source):
+                return self.link_keys_from_list_of_obj(source=source)
+
+            elif all(isinstance(item, str) for item in source):
+                return self.link_keys_from_list_of_str(source=source, language=language)
+
+        raise TypeError("Source for keys should have a string, Key or list of strings or Keys type. "
+                        "You input %s" % type(source))
+
+    def check_tag_match(self, extended_result: bool = False) -> Optional[bool, tuple]:
+        """
+        Determine the discrepancy between the declared tags and those actually specified in the Definition
+        :param extended_result: If True, returns an expanded dataset instead of a boolean
+        :return: Boolean or tuple, depending on the extended_result variable
+        """
+        if not self.case_tags:
+            return None
+
+        pattern_case_tags = f"[{''.join(self.CASE_TAGS)}]"
+        list_tags = re.findall(pattern_case_tags, self.case_tags)
+        list_body = [tag for tag in re.findall(r'\w+', self.body) if tag in self.CASE_TAGS]
+
+        result = list_tags == list_body
+        if extended_result:
+            return result, list_tags, list_body
+
+        return True if result else False
 
 
 class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
@@ -328,6 +452,16 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
             self.__derivatives.append(child)
         return child.name
 
+    def add_children(self, children: List[Word]):
+        """
+        Add derivatives for the source word
+        Get words from Used In and add relationship in database
+        :param children: List of Word objects
+        :return: None
+        """
+        new_children = list(set(children) - set(self.__derivatives))
+        self.__derivatives.extend(new_children) if new_children else None
+
     def add_author(self, author: Author) -> str:
         """
         Connect Author object with Word object
@@ -337,6 +471,15 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         if not self.authors.filter(Author.abbreviation == author.abbreviation).count() > 0:
             self.authors.append(author)
         return author.abbreviation
+
+    def add_authors(self, authors: List[Author]):
+        """
+        Connect Author objects with Word object
+        :param authors: List of Author object
+        :return:
+        """
+        new_authors = list(set(authors) - set(self.authors))
+        self.authors.extend(new_authors) if new_authors else None
 
     def get_definitions(self) -> List[Definition]:
         """
@@ -409,6 +552,47 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         :return:
         """
         return self.get_afx()
+
+    def get_prim_sources(self) -> List[WordSource]:
+        if self.type.group != "Prim" or " | " not in self.origin:
+            return []
+
+        pattern_source = r"\d+\/\d+\w"
+        sources = str(self.origin).split(" | ")
+        word_sources = []
+        for source in sources:
+            compatibility = re.search(pattern_source, source)[0]
+            c_l = compatibility[:-1].split("/")
+            transcription = (re.search(rf"(?!{pattern_source}) .+", source)[0]).strip()
+            word_source = WordSource(**{
+                "coincidence": int(c_l[0]),
+                "length": int(c_l[1]),
+                "language": compatibility[-1:],
+                "transcription": transcription, })
+            word_sources.append(word_source)
+
+        return word_sources
+
+
+class WordSource(InitBase):
+    """
+    Word Source from Word.origin for Prims
+    """
+
+    LANGUAGES = {
+        "E": "English",
+        "C": "Chinese",
+        "H": "Hindi",
+        "R": "Russian",
+        "S": "Spanish",
+        "F": "French",
+        "J": "Japanese",
+        "G": "German", }
+
+    coincidence: int = None
+    length: int = None
+    language: str = None
+    transcription: str = None
 
 
 class WordSpell(DictionaryBase, ConvertWordSpell):

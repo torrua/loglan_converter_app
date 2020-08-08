@@ -4,12 +4,11 @@
 Module for creating database relationships
 """
 
-import re
 from typing import List
 
 from config import log
 from config.postgres import db
-from config.postgres.model_base import Author, Definition, Type, Word, Key
+from config.postgres.model_base import Author, Definition, Type, Word
 
 
 def db_link_authors(words: List[List[str]]) -> None:
@@ -33,11 +32,8 @@ def db_link_authors(words: List[List[str]]) -> None:
 
     for word in Word.query.all():
         authors_abbreviations = dict_of_authors_data_as_dict[word.id_old]
-
-        abbreviations = [
-            word.add_author(author_by_abbr[abbreviation])
-            for abbreviation in authors_abbreviations]
-        log_text = f"{word.name} {' '*(26-len(word.name))}-> {'/'.join(abbreviations)}"
+        word.add_authors([author_by_abbr[abbreviation] for abbreviation in authors_abbreviations])
+        log_text = f"{word.name} {' '*(26-len(word.name))}-> {'/'.join(authors_abbreviations)}"
         log.debug(log_text)
     db.session.commit()
     log.info("Finish to link words with their authors")
@@ -59,23 +55,26 @@ def db_link_complexes(words: List[List[str]]) -> None:
     def get_elements_from_str(set_as_str: str, separator: str = " | ") -> list:
         return [element.strip() for element in set_as_str.split(separator)]
 
+    # all_words = Word.get_all()
     for item in words:
         if not item[10]:  # If 'Used In' field does not exist
             continue
 
         # On idea only one parent should always be here
         parents = Word.query.filter(Word.id_old == int(item[0])).all()
+        # parents = [word for word in all_words if word.id_old == int(item[0])]
+
         if len(parents) > 1:
             log.warning(
                 "The are %s for this word!\n%s",
                 len(parents), [parent.name for parent in parents])
         for parent in parents:
-            children = Word.query.filter(Word.name.in_(
-                get_elements_from_str(item[10]))).order_by(Word.id.asc()).all()
-
-            child_names = [parent.add_child(child) for child in children if child]
+            child_names = get_elements_from_str(item[10])
+            children = Word.query.filter(Word.name.in_(child_names)).order_by(Word.id.asc()).all()
+            # children = [word for word in all_words if (word and (word.name in child_names))]
+            children = [child for child in children if child]
             # TODO There are unspecified words, for example, <zvovai>
-
+            parent.add_children(children)
             log_text = f"{parent.name} {' ' * (26 - len(parent.name))}-> {child_names}"
             log.debug(log_text)
     db.session.commit()
@@ -112,8 +111,8 @@ def db_link_affixes(words: List[List[str]]) -> None:
             .filter(Type.group == "Prim").all()
 
         for prim in primitives:
-            affix_names = [prim.add_child(djifoa) for djifoa in djifoas_as_object]
-            log.debug("%s < %s", prim.name, affix_names)
+            prim.add_children(djifoas_as_object)
+            log.debug("%s < %s", prim.name, djifoas)
     db.session.commit()
     log.info("Finish to link words with their affixes")
 
@@ -124,13 +123,16 @@ def db_link_keys() -> None:
     :return: None
     """
     log.info("Start to link definitions with their keys")
-    pattern = r"(?<=\«)(.+?)(?=\»)"
-    all_definitions = Definition.query.all()
-    for definition in all_definitions:
-        keys = re.findall(pattern, definition.body)
-        log.debug("%s - %s: %s", definition.source_word.name, definition.position, keys)
-        key_objects = Key.query.filter(Key.word.in_(keys)).all()
-        _ = [definition.add_key(key) for key in key_objects]
+
+    # word = Word.query.filter(Word.name == "noirtiaklaki").first()
+    # definitions = Definition.query.filter(Definition.id > word.definitions[0].id).all()
+
+    for definition in Definition.query.all():
+        added_keys = definition.link_keys()
+        log.debug(
+            "%s - %s: %s", definition.source_word.name,
+            definition.position, [k.word for k in added_keys] if added_keys else None)
+
     db.session.commit()
     log.info("Finish to link definitions with their keys")
 
@@ -154,3 +156,11 @@ def db_link_tables(dataset: dict) -> None:
     db_link_affixes(words_dataset)
     db_link_keys()
     log.info("Finish to link tables data")
+
+
+if __name__ == "__main__":
+    from config import create_app
+    from config.postgres import CLIConfig
+
+    with create_app(CLIConfig).app_context():
+        pass

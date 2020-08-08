@@ -31,7 +31,8 @@ class ExportSetting(Setting):
 
 class ExportType(Type):
     def export(self):
-        return f"{self.type}@{self.type_x}@{self.group}@{self.parentable}"
+        return f"{self.type}@{self.type_x}@{self.group}@{self.parentable}" \
+               f"@{self.description if self.description else ''}"
 
 
 class ExportWord(Word):

@@ -4,6 +4,7 @@
 """
 Configuration file for the whole project
 """
+import os
 import sys
 import re
 import logging
@@ -11,15 +12,15 @@ from flask import Flask
 
 
 logging.basicConfig(
-    format='%(message)s',
-    # format='%(filename)s [LINE:%(lineno)d]\t[%(asctime)s] %(levelname)-s\t%(funcName)s() \t\t%(message)s',
-    level=logging.DEBUG,
+    # format='%(message)s',
+    format='%(filename)s [LINE:%(lineno)d]\t[%(asctime)s] %(levelname)-s\t%(funcName)s() \t\t%(message)s',
+    level=logging.INFO,
     datefmt="%y-%m-%d %H:%M:%S")
 
 log = logging.getLogger(__name__)
 
 EN = "en"
-DEFAULT_LANGUAGE = EN
+DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", EN)
 SEPARATOR = "@"
 
 root_pattern = r".*\\"

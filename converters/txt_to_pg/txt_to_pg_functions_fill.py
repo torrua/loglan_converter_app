@@ -3,13 +3,12 @@
 Module for adding dictionary data to the database
 """
 
-from config import log, SEPARATOR, DEFAULT_LANGUAGE
-from config.postgres import db, models_pg_from_file, models_pg_to_db
+from config import log
+from config.postgres import db, models_pg_from_file
 from config.postgres.model_base import Author, Event, \
     Definition, Setting, Syllable, Type, Word, WordSpell, Key
 from converters.txt_to_pg.converters_txt_to_pg import converters_pg
 from config.text.functions import download_dictionary_file
-from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 
 
 def add_objects_to_db(model: str, converter, data: tuple) -> None:
@@ -42,7 +41,6 @@ def get_txt_dataset(source_path: str):
 
 def get_dataset_for_converters(source_path: str, language: str) -> dict:
     txt_dataset = get_txt_dataset(source_path)
-    print(txt_dataset.keys())
     return {
         Author.__name__: (txt_dataset[Author.__name__],),
         Event.__name__: (txt_dataset[Event.__name__],),

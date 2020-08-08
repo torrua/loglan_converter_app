@@ -9,7 +9,9 @@ Create an application object and database
 import os
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import create_engine
-from config import log, root_directory
+from config import log, DEFAULT_LANGUAGE, root_directory
+
+LOD_KEY_DEFAULT_LANGUAGE = os.getenv("LOD_KEY_DEFAULT_LANGUAGE", DEFAULT_LANGUAGE)
 
 db = SQLAlchemy()
 

@@ -84,6 +84,7 @@ def converter_types(types: List[List[str]]) -> List[Type]:
         "type_x": item[1],
         "group": item[2],
         "parentable": ast.literal_eval(item[3]),
+        "description": item[4],
     }) for item in types]
 
 
