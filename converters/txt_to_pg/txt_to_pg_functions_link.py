@@ -55,14 +55,14 @@ def db_link_complexes(words: List[List[str]]) -> None:
     def get_elements_from_str(set_as_str: str, separator: str = " | ") -> list:
         return [element.strip() for element in set_as_str.split(separator)]
 
-    # all_words = Word.get_all()
+    all_words = Word.get_all()
     for item in words:
         if not item[10]:  # If 'Used In' field does not exist
             continue
 
         # On idea only one parent should always be here
-        parents = Word.query.filter(Word.id_old == int(item[0])).all()
-        # parents = [word for word in all_words if word.id_old == int(item[0])]
+        # parents = Word.query.filter(Word.id_old == int(item[0])).all()
+        parents = [word for word in all_words if word.id_old == int(item[0])]  # LOCAL
 
         if len(parents) > 1:
             log.warning(
@@ -70,8 +70,8 @@ def db_link_complexes(words: List[List[str]]) -> None:
                 len(parents), [parent.name for parent in parents])
         for parent in parents:
             child_names = get_elements_from_str(item[10])
-            children = Word.query.filter(Word.name.in_(child_names)).order_by(Word.id.asc()).all()
-            # children = [word for word in all_words if (word and (word.name in child_names))]
+            # children = Word.query.filter(Word.name.in_(child_names)).order_by(Word.id.asc()).all()
+            children = [word for word in all_words if (word and (word.name in child_names))]  # LOCAL
             children = [child for child in children if child]
             # TODO There are unspecified words, for example, <zvovai>
             parent.add_children(children)
@@ -123,9 +123,6 @@ def db_link_keys() -> None:
     :return: None
     """
     log.info("Start to link definitions with their keys")
-
-    # word = Word.query.filter(Word.name == "noirtiaklaki").first()
-    # definitions = Definition.query.filter(Definition.id > word.definitions[0].id).all()
 
     for definition in Definition.query.all():
         added_keys = definition.link_keys()
