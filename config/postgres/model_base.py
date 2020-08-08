@@ -119,12 +119,25 @@ class DBBase:
         return cls.query.all()
 
     @classmethod
-    def non_foreign_keys(cls) -> Set[str]:
+    def attributes_all(cls) -> Set[str]:
         """
         :return:
         """
-        return {column.name for column in cls.__table__.columns
-                if not (column.foreign_keys or column.name.startswith("_"))}
+        return {key for key in cls.__mapper__.attrs.keys() if not key.startswith("_")}
+
+    @classmethod
+    def attributes_basic(cls) -> Set[str]:
+        """
+        :return:
+        """
+        return set(cls.attributes_all() - cls.relationships())
+
+    @classmethod
+    def attributes_extended(cls) -> Set[str]:
+        """
+        :return:
+        """
+        return set(cls.attributes_all() - cls.foreign_keys())
 
     @classmethod
     def relationships(cls) -> Set[str]:
@@ -134,32 +147,19 @@ class DBBase:
         return {key for key in cls.__mapper__.relationships.keys() if not key.startswith("_")}
 
     @classmethod
-    def all_attributes(cls) -> Set[str]:
-        """
-        :return:
-        """
-        return {key for key in cls.__mapper__.attrs.keys() if not key.startswith("_")}
-
-    @classmethod
     def foreign_keys(cls) -> Set[str]:
         """
         :return:
         """
-        return set(cls.all_attributes() - cls.relationships() - cls.non_foreign_keys())
+        return set(cls.attributes_all() - cls.relationships() - cls.non_foreign_keys())
 
     @classmethod
-    def attributes_basic(cls) -> Set[str]:
+    def non_foreign_keys(cls) -> Set[str]:
         """
         :return:
         """
-        return set(cls.all_attributes() - cls.relationships())
-
-    @classmethod
-    def attributes_extended(cls) -> Set[str]:
-        """
-        :return:
-        """
-        return set(cls.all_attributes() - cls.foreign_keys())
+        return {column.name for column in cls.__table__.columns
+                if not (column.foreign_keys or column.name.startswith("_"))}
 
 
 class Author(db.Model, DictionaryBase, DBBase, ConvertAuthor):
