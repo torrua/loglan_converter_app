@@ -74,7 +74,7 @@ class InitBase:
 
 
 class DictionaryBase(InitBase):
-    pass
+    """Workaround for separating classes and making inheritance selections"""
 
 
 class DBBase:
@@ -255,7 +255,7 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
     language = db.Column(db.String(16))
     notes = db.Column(db.String(255))
 
-    CASE_TAGS = ["B", "C", "D", "F", "G", "J", "K", "N", "P", "S", "V", ]
+    APPROVED_CASE_TAGS = ["B", "C", "D", "F", "G", "J", "K", "N", "P", "S", "V", ]
 
     keys = db.relationship(Key.__name__, secondary=t_connect_keys,
                            backref="definitions", lazy='dynamic')
@@ -280,7 +280,7 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
             ~exists().where(Key.id == self.keys.subquery().c.id),
         ).all()
 
-        self.keys.extend(new_keys) if new_keys else None
+        self.keys.extend(new_keys)
         return new_keys
 
     def link_key_from_str(self, word: str, language: str = None) -> Optional[Key]:
@@ -305,7 +305,7 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
         :return: List of linked Key objects
         """
         new_keys = list(set(source) - set(self.keys))
-        self.keys.extend(new_keys) if new_keys else None
+        self.keys.extend(new_keys)
         return new_keys
 
     def link_key_from_obj(self, key: Key) -> Optional[Key]:
@@ -320,7 +320,9 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
             return key
         return None
 
-    def link_keys_from_definition_body(self, language: str = None, pattern: str = None) -> List[Key]:
+    def link_keys_from_definition_body(
+            self, language: str = None,
+            pattern: str = None) -> List[Key]:
         """
         Extract and link keys from Definition's body
         :param language: Language of Definition's keys
@@ -366,27 +368,9 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
             elif all(isinstance(item, str) for item in source):
                 return self.link_keys_from_list_of_str(source=source, language=language)
 
-        raise TypeError("Source for keys should have a string, Key or list of strings or Keys type. "
+        raise TypeError("Source for keys should have a string, "
+                        "Key or list of strings or Keys type. "
                         "You input %s" % type(source))
-
-    def check_tag_match(self, extended_result: bool = False) -> Optional[bool, tuple]:
-        """
-        Determine the discrepancy between the declared tags and those actually specified in the Definition
-        :param extended_result: If True, returns an expanded dataset instead of a boolean
-        :return: Boolean or tuple, depending on the extended_result variable
-        """
-        if not self.case_tags:
-            return None
-
-        pattern_case_tags = f"[{''.join(self.CASE_TAGS)}]"
-        list_tags = re.findall(pattern_case_tags, self.case_tags)
-        list_body = [tag for tag in re.findall(r'\w+', self.body) if tag in self.CASE_TAGS]
-
-        result = list_tags == list_body
-        if extended_result:
-            return result, list_tags, list_body
-
-        return True if result else False
 
 
 class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
@@ -553,8 +537,37 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         """
         return self.get_afx()
 
-    def get_prim_sources(self) -> List[WordSource]:
-        if self.type.group != "Prim" or " | " not in self.origin:
+    def get_sources_prim(self, prim_type: str):
+        existing_prim_types = ["C", "D", "I", "L", "N", "O", "S", ]
+        if prim_type not in existing_prim_types:
+            return []
+
+        if prim_type == "C":
+            return self._get_sources_c_prim()
+
+        if prim_type == "D":  # TODO
+            return f"{self.name}: {self.origin} < {self.origin_x}"
+
+        if prim_type == "I":  # TODO
+            return f"{self.name}: {self.origin} < {self.origin_x}"
+
+        if prim_type == "L":  # TODO
+            return f"{self.name}: {self.origin} < {self.origin_x}"
+
+        if prim_type == "N":  # TODO
+            return f"{self.name}: {self.origin} < {self.origin_x}"
+
+        if prim_type == "O":  # TODO
+            return f"{self.name}: {self.origin} < {self.origin_x}"
+
+        if prim_type == "S":  # TODO
+            return f"{self.name}: {self.origin} < {self.origin_x}"
+
+    def _get_sources_c_prim(self) -> List[WordSource]:
+        """
+        :return:
+        """
+        if self.type.type != "C-Prim":
             return []
 
         pattern_source = r"\d+\/\d+\w"
@@ -572,6 +585,26 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
             word_sources.append(word_source)
 
         return word_sources
+
+    def get_sources_cpx(self, as_objects: bool = False) -> Union[str, Word]:
+        """
+
+        :param as_objects: Boolean - return Word objects if true
+        :return:
+        """
+        # these prims have switched djifoas like 'flo' for 'folma'
+        switch_prims = [
+            'canli', 'farfu', 'folma', 'forli', 'kutla', 'marka',
+            'mordu', 'sanca', 'sordi', 'suksi', 'surna']
+        sources = []
+        if self.type.group == "Cpx":
+            sources = self.origin.replace("(", "").replace(")", "").replace("/", "")
+            sources = str(sources).split("+")
+            sources = [s for s in sources if s != "y" and s != "r" and s != "n"]
+            sources = [
+                s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
+                for s in sources if s != "y" and s != "r"]
+        return sources if not as_objects else Word.query.filter(Word.name.in_(sources)).all()
 
 
 class WordSource(InitBase):
@@ -593,6 +626,10 @@ class WordSource(InitBase):
     length: int = None
     language: str = None
     transcription: str = None
+
+    @property
+    def as_string(self):  # For example 3/5R mesto
+        return f"{self.coincidence}/{self.length}{self.language} {self.transcription}"
 
 
 class WordSpell(DictionaryBase, ConvertWordSpell):
