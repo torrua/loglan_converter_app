@@ -36,38 +36,45 @@ class ExportType(Type):
 
 
 class ExportWord(Word):
+    @property
+    def e_affixes(self) -> str:
+        w_affixes = self.get_afx()
+        return ' '.join(sorted({afx.name.replace("-", "") for afx in w_affixes})) if w_affixes else ""
+
+    @property
+    def e_source(self) -> str:
+        notes = self.notes if self.notes else {}
+        w_source = self.authors.all()
+        # print(self) if not self.authors.all() else None
+        source = '/'.join(sorted([auth.abbreviation for auth in w_source])) \
+            if len(w_source) > 1 else w_source[0].abbreviation
+        return source + (" " + notes["author"] if notes.get("author", False) else "")
+
+    @property
+    def e_year(self) -> str:
+        notes = self.notes if self.notes else {}
+        return str(self.year.year) + (" " + notes["year"] if notes.get("year", False) else "")
+
+    @property
+    def e_usedin(self):
+        w_usedin = self.get_cpx()
+        return ' | '.join(sorted({cpx.name for cpx in w_usedin})) if w_usedin else ""
+
     def export(self):
         """
                 Prepare Word data for exporting to text file
                 :return: Formatted basic string
                 """
         notes = self.notes if self.notes else {}
-
-        w_affixes = self.get_afx()
-        affixes = ' '.join(sorted({afx.name.replace("-", "") for afx in w_affixes})) if w_affixes else ""
-
         w_match = self.match
         match = w_match if w_match else ""
-
-        w_source = self.authors.all()
-        # print(self) if not self.authors.all() else None
-        source = '/'.join(sorted([auth.abbreviation for auth in w_source])) \
-            if len(w_source) > 1 else w_source[0].abbreviation
-        source = source + (" " + notes["author"] if notes.get("author", False) else "")
-
-        year = str(self.year.year) + (" " + notes["year"] if notes.get("year", False) else "")
-
         rank = self.rank + (" " + notes["rank"] if notes.get("rank", False) else "")
-
-        w_usedin = self.get_cpx()
-        usedin = ' | '.join(sorted({cpx.name for cpx in w_usedin})) if w_usedin else ""
-
         tid_old = self.TID_old if self.TID_old else ""
         origin_x = self.origin_x if self.origin_x else ""
         origin = self.origin if self.origin else ""
-        return f"{self.id_old}@{self.type.type}@{self.type.type_x}@{affixes}" \
-               f"@{match}@{source}@{year}@{rank}" \
-               f"@{origin}@{origin_x}@{usedin}@{tid_old}"
+        return f"{self.id_old}@{self.type.type}@{self.type.type_x}@{self.e_affixes}" \
+               f"@{match}@{self.e_source}@{self.e_year}@{rank}" \
+               f"@{origin}@{origin_x}@{self.e_usedin}@{tid_old}"
 
 
 class ExportDefinition(Definition):
