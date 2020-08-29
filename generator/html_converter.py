@@ -22,7 +22,7 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: str = None):
 
     all_words = HTMLExportWord.query.\
         filter(HTMLExportWord.event_end_id.is_(lex_event)).\
-        order_by(HTMLExportWord.name).all()  # [1350:1400]
+        order_by(HTMLExportWord.name).all()[1350:1400]
     grouped_words = groupby(all_words, lambda ent: ent.name)
 
     group_words = {k: list(g) for k, g in grouped_words}
@@ -39,7 +39,7 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: str = None):
 
 
 def prepare_dictionary_e(style: str = DEFAULT_STYLE, key_language: str = DEFAULT_LANGUAGE):
-    all_keys = Key.query.order_by(Key.word).filter(Key.language == key_language).all()  # [1600:1700]
+    all_keys = Key.query.order_by(Key.word).filter(Key.language == key_language).all()[1600:1700]
     all_keys_words = [key.word for key in all_keys]
 
     grouped_keys = groupby(all_keys, lambda ent: ent.word)

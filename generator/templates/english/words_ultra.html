@@ -30,8 +30,4 @@
 {% endfor %}
 {% endblock %}
 
-{% block tech %}
-{% for title, value in technical.items() %}
-{{ title }} - {{ value }};
-{% endfor %}
-{% endblock %}
+{% block tech %}{% for title, value in technical.items() %}{{ title }} - {{ value }}; {% endfor %}{% endblock %}
