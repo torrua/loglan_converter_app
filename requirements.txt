@@ -7,3 +7,4 @@ sqlalchemy-access
 pywin32
 pyinstaller
 pyodbc
+jinja2

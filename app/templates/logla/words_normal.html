@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block words %}
+	{% for letter, words in data.dictionary.items() %}
+	<hr width="400px" align="left">
+	<div class="letter" name="{{ letter }}">
+		<a name="{{ letter }}"></a>
+		<span class="letter">{{ letter }}</span>
+		{%- for word in words %}
+		<div class="word" wid='{{ word.name.lower() }}'>
+		<div class="word_line"><span class="word_name">{{ word.name }}</span>,</div>
+			<div class="meanings">
+				{%- for meaning in word.meanings %}
+				<div class="meaning" id="{{ meaning.mid }}">
+					<div class="technical">{{ meaning.technical }}</div>
+					<div class="definitions">
+					{%- for definition in meaning.definitions %}
+						{{definition}}
+					{%- endfor %}
+					</div>
+					{%- if meaning.used_in %}
+					<div class="used_in">Used In: {{ meaning.used_in }}</div>
+					{%- endif %}
+				</div>
+				{%- endfor %}
+			</div>
+		</div>
+		{%- endfor %}
+	</div>
+    {% endfor %}
+{% endblock %}
+{% block db %}
+Generated - {{ data.technical.generation_date }};
+Database - {{ data.technical.db_release }};
+LexEvent - {{ data.technical.lex_event }};
+{% endblock %}

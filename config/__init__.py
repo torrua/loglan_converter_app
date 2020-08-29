@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 EN = "en"
 DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", EN)
+DEFAULT_STYLE = os.getenv("DEFAULT_STYLE", "ultra")
 SEPARATOR = "@"
 
 root_pattern = r".*\\"

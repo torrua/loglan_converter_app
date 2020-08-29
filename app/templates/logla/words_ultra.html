@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block menu %}
+<div class="collapse navbar-collapse" id="navbarSupportedContent">
+	<ul class="navbar-nav mr-auto">
+		{% for letter in data.dictionary.keys() %}
+		<li class="nav-item">
+			<a class="nav-link" href="#{{ letter }}">{{ letter }}</a>
+		</li>
+		{% endfor %}
+	</ul>
+</div>
+{% endblock %}
+
+{% block words %}
+{% for letter, words in data.dictionary.items() %}
+<hr width="400px" align="left">
+<a name="{{ letter }}"></a>
+<div class="lt"><span class="lt">{{ letter }}</span>
+{%- for word in words %}
+<w wid="{{ word.name.lower() }}"><wl>{{ word.name }},</wl>
+<ms>
+	{%- for meaning in word.meanings %}
+	<m>
+		<t>{{ meaning.technical }}</t>
+		<ds>
+		{%- for definition in meaning.definitions %}
+			{{definition}}
+		{%- endfor %}
+		</ds>
+		{%- if meaning.used_in %}
+		<us>Used In: {{ meaning.used_in }}</us>
+		{%- endif %}
+	</m>
+	{%- endfor %}
+</ms>
+</w>
+{%- endfor %}
+</div>
+{% endfor %}
+{% endblock %}
+{% block db %}
+Generated - {{ data.technical.generation_date }};
+Database - {{ data.technical.db_release }};
+LexEvent - {{ data.technical.lex_event }};
+{% endblock %}
