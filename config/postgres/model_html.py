@@ -10,74 +10,98 @@ from config import DEFAULT_STYLE
 class HTMLExportDefinition(ExportDefinition):
 
     @staticmethod
-    def body_replacer(body: str):
+    def format_body(body: str) -> str:
         """
-
+        Substitutes tags in the definition's body
+        Formats punctuation signs
         :param body:
         :return:
         """
-        open_key_tag = '<k>'  # key
-        close_key_tag = '</k>'
-        open_log_tag = '<l>'  # log
-        close_log_tag = '</l>'
+        to_key = '<k>'  # key
+        tc_key = '</k>'
+        to_log = '<l>'  # log
+        tc_log = '</l>'
 
         return body \
-            .replace("«", open_key_tag) \
-            .replace("»", close_key_tag) \
-            .replace("{", open_log_tag) \
-            .replace("}", close_log_tag) \
+            .replace("«", to_key).replace("»", tc_key) \
+            .replace("{", to_log).replace("}", tc_log) \
             .replace("...", "…").replace("--", "—")
 
-    def export_for_english(self, word: str, style: str = DEFAULT_STYLE):
+    @staticmethod
+    def highlight_key(def_body, word) -> str:
+        """
+        Highlights the current key from the list, deselecting the rest
+        :param def_body:
+        :param word:
+        :return:
+        """
+
+        to_key = '<k>'  # key
+        tc_key = '</k>'
+
+        word_template_original = f'{to_key}{word}{tc_key}'
+        word_template_temp = f'<do_not_delete>{word}</do_not_delete>'
+        def_body = def_body.replace(word_template_original, word_template_temp)
+        def_body = def_body.replace(to_key, "").replace(tc_key, "")
+        def_body = def_body.replace(word_template_temp, word_template_original)
+        return def_body
+
+    def export_for_english(self, word: str, style: str = DEFAULT_STYLE) -> str:
         """
 
         :param word:
         :param style:
         :return:
         """
+
+        tags = {
+            "normal": [
+                '<span class="dg">(%s)</span>', '<span class="dt">[%s]</span> ', ' <span class="db">%s</span>',
+                f'<div class="d" id={self.id}>%s</div>', '<div class="d_line">%s</div>',
+                '<span class="w_name">%s</span>, ', '<span class="w_origin">&lt;%s&gt;</span> ', ],
+            "ultra": ['(%s)', '[%s] ', ' %s', '<d>%s</d>', '<ld>%s</ld>', '<wn>%s</wn>, ', '<o>&lt;%s&gt;</o> ', ],
+        }
+        t_d_gram, t_d_tags, t_d_body, t_def, t_def_line, t_word_name, t_word_origin = tags[style]
+
         gram_form = f'{str(self.slots) if self.slots else ""}' + self.grammar_code
-        def_gram = f'({gram_form})' if gram_form else ''
-        def_tags = f'[{self.case_tags.replace("-", "&zwj;-&zwj;")}] ' if self.case_tags else ''
+        def_gram = t_d_gram % gram_form if gram_form else ''
+        def_tags = t_d_tags % self.case_tags.replace("-", "&zwj;-&zwj;") if self.case_tags else ''
+
+        def_body = HTMLExportDefinition.format_body(self.body)
+        def_body = HTMLExportDefinition.highlight_key(def_body, word)
+        def_body = t_d_body % def_body
+
         d_source_word = self.source_word
+        w_name = d_source_word.name if not self.usage else self.usage.replace("%", d_source_word.name)
+        word_name = t_word_name % w_name
 
-        word_template_original = f'<k>{word}</k>'
-        word_template_temp = f'<do_not_delete>{word}</do_not_delete>'
-        def_body = f' {HTMLExportDefinition.body_replacer(self.body)}'
-        def_body = def_body.replace(word_template_original, word_template_temp)
-        def_body = def_body.replace("<k>", "").replace("</k>", "")
-        def_body = def_body.replace(word_template_temp, word_template_original)
-
-        word_name = f'<wn>{d_source_word.name if not self.usage else self.usage.replace("%", d_source_word.name)}</wn>, '
         w_origin_x = d_source_word.origin_x if d_source_word.origin_x and d_source_word.type.group == "Cpx" else ''
-        word_origin_x = f'<o>&lt;{w_origin_x}&gt;</o> ' if w_origin_x else ''
-        return f'<ld>{word_name}{word_origin_x}<d>{def_tags}{def_gram}{def_body}</d></ld>'
+        word_origin_x = t_word_origin % w_origin_x if w_origin_x else ''
 
-    def export_for_loglan(self, style: str = DEFAULT_STYLE):
+        definition = t_def % f'{def_tags}{def_gram}{def_body}'
+        return t_def_line % f'{word_name}{word_origin_x}{definition}'
+
+    def export_for_loglan(self, style: str = DEFAULT_STYLE) -> str:
         """
 
         :param style:
         :return:
         """
-        tags_open = {
+        tags = {
+            # usage, gram, body, tags, definition
             "normal": [
-                '<span class="du">', '<span class="dg">', '<span class="db">',
-                '<span class="dt">', f'<div class="d" id={self.id}>', ],
-            "ultra": ['<du>', '', '', '', '<d>', ],
+                '<span class="du">%s</span> ', '<span class="dg">(%s)</span> ', '<span class="db"></span>',
+                ' <span class="dt">[%s]</span>', f'<div class="d" id={self.id}>%s</div>', ],
+            "ultra": ['<du>%s</du> ', '(%s) ', '%s', ' [%s]', '<d>%s</d>', ],
         }
-        tags_close = {
-            "normal": ['</span>', '</span>', '</span>', '</span>', '</div>', ],
-            "ultra": ['</du>', '', '', '', '</d>', ],
-        }
+        t_d_usage, t_d_gram, t_d_body, t_d_tags, t_definition = tags[style]
 
-        to_d_usage, to_d_gram, to_d_body, to_d_tags, to_definition = tags_open[style]
-        tc_d_usage, tc_d_gram, tc_d_body, tc_d_tags, tc_definition = tags_close[style]
-
-        def_usage = f'{to_d_usage}{self.usage}{tc_d_usage} '.replace("%", "—") if self.usage else ''
+        def_usage = t_d_usage % self.usage.replace("%", "—") if self.usage else ''
         gram_form = f"{str(self.slots) if self.slots else ''}" + self.grammar_code
-        def_gram = f'({to_d_gram}{gram_form}{tc_d_gram}) ' if gram_form else ''
-        def_body = f'{to_d_body}{HTMLExportDefinition.body_replacer(self.body)}{tc_d_body}'
-        def_tags = f' {to_d_tags}[{self.case_tags.replace("-", "&zwj;-&zwj;")}]{tc_d_tags}' if self.case_tags else ''
-        return f'{to_definition}{def_usage}{def_gram}{def_body}{def_tags}{tc_definition}'
+        def_gram = t_d_gram % gram_form if gram_form else ''
+        def_body = t_d_body % HTMLExportDefinition.format_body(self.body)
+        def_tags = t_d_tags % self.case_tags.replace("-", "&zwj;-&zwj;") if self.case_tags else ''
+        return t_definition % f'{def_usage}{def_gram}{def_body}{def_tags}'
 
 
 class HTMLExportWord(ExportWord):
@@ -119,30 +143,25 @@ class HTMLExportWord(ExportWord):
         :param style:
         :return:
         """
-        tags_open = {
+        tags = {
             "normal": [
-                '<span class="m_afx">', '<span class="m_match">', '<span class="m_type">',
-                '<span class="m_author">', '<span class="m_year">', '<span class="m_rank">',
-                '<span class="m_use">', '<span class="m_technical">'],
-            "ultra": ['<afx>', '', '', '', '', '', '<use>', '<tec>'],
+                '<span class="m_afx">%s</span> ', '<span class="m_match">%s</span> ',
+                '<span class="m_type">%s</span> ', '<span class="m_author">%s</span> ',
+                '<span class="m_year">%s</span> ', '<span class="m_rank">%s</span>',
+                '<span class="m_use">%s</span>', '<span class="m_technical">%s</span>'],
+            "ultra": ['<afx>%s</afx> ', '%s ', '%s ', '%s ', '%s ', '%s', '<use>%s</use>', '<tec>%s</tec>'],
         }
-        tags_close = {
-            "normal": ['</span>', '</span>', '</span>', '</span>', '</span>', '</span>', '</span>', '</span>'],
-            "ultra": ['</afx>', '', '', '', '', '', '</use>', '</tec>'],
-        }
+        t_afx, t_match, t_type, t_author, t_year, t_rank, t_use, t_technical = tags[style]
 
-        to_afx, to_match, to_type, to_author, to_year, to_rank, to_use, to_technical = tags_open[style]
-        tc_afx, tc_match, tc_type, tc_author, tc_year, tc_rank, tc_use, tc_technical = tags_close[style]
+        html_affixes = t_afx % self.e_affixes if self.e_affixes else ''
+        html_match = t_match % self.match if self.match else ''
+        html_type = t_type% self.type.type if self.type.type else ''
+        html_source = t_author % self.e_source if self.e_source else ''
+        html_year = t_year % self.e_year if self.e_year else ''
+        html_rank = t_rank % self.rank if self.rank else ''
+        html_usedin = t_use % self.e_usedin.replace("| ", "|&nbsp;") if self.e_usedin else None
 
-        html_affixes = f'{to_afx}{self.e_affixes}{tc_afx} ' if self.e_affixes else ''
-        html_match = f'{to_match}{self.match}{tc_match} ' if self.match else ''
-        html_type = f'{to_type}{self.type.type}{tc_type} ' if self.type.type else ''
-        html_source = f'{to_author}{self.e_source}{tc_author} ' if self.e_source else ''
-        html_year = f'{to_year}{self.e_year}{tc_year} ' if self.e_year else ''
-        html_rank = f'{to_rank}{self.rank}{tc_rank}' if self.rank else ''
-        html_usedin = f'{to_use}{self.e_usedin.replace("| ", "|&nbsp;")}{tc_use}' if self.e_usedin else None
-
-        html_tech = f'{to_technical}{html_match}{html_type}{html_source}{html_year}{html_rank}{tc_technical}'
+        html_tech = t_technical % f'{html_match}{html_type}{html_source}{html_year}{html_rank}'
         html_tech = f'{html_affixes}{self.html_origin(style)}{html_tech}'
 
         return {
