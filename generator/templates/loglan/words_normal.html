@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block words %}
-	{% for letter, words in data.dictionary.items() %}
+	{% for letter, words in dictionary.items() %}
 	<hr width="400px" align="left">
 	<div class="letter" name="{{ letter }}">
 		<a name="{{ letter }}"></a>
@@ -29,7 +29,7 @@
     {% endfor %}
 {% endblock %}
 {% block db %}
-Generated - {{ data.technical.generation_date }};
-Database - {{ data.technical.db_release }};
-LexEvent - {{ data.technical.lex_event }};
+Generated - {{ technical.generation_date }};
+Database - {{ technical.db_release }};
+LexEvent - {{ technical.lex_event }};
 {% endblock %}

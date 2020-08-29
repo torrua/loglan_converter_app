@@ -3,7 +3,7 @@
 {% block menu %}
 <div class="collapse navbar-collapse" id="navbarSupportedContent">
 	<ul class="navbar-nav mr-auto">
-		{% for letter in data.dictionary.keys() %}
+		{% for letter in dictionary.keys() %}
 		<li class="nav-item">
 			<a class="nav-link" href="#{{ letter }}">{{ letter }}</a>
 		</li>
@@ -13,7 +13,7 @@
 {% endblock %}
 
 {% block words %}
-{% for letter, words in data.dictionary.items() %}
+{% for letter, words in dictionary.items() %}
 <hr width="400px" align="left">
 <a name="{{ letter }}"></a>
 <div class="lt"><span class="lt">{{ letter }}</span>
@@ -39,8 +39,9 @@
 </div>
 {% endfor %}
 {% endblock %}
-{% block db %}
-Generated - {{ data.technical.generation_date }};
-Database - {{ data.technical.db_release }};
-LexEvent - {{ data.technical.lex_event }};
+
+{% block tech %}
+{% for title, value in technical.items() %}
+{{ title }} - {{ value }};
+{% endfor %}
 {% endblock %}
