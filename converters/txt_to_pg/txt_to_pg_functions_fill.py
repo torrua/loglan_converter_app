@@ -11,24 +11,6 @@ from converters.txt_to_pg.converters_txt_to_pg import converters_pg
 from config.text.functions import download_dictionary_file
 
 
-def add_objects_to_db(model: str, converter, data: tuple) -> None:
-    """
-    Generate objects and save them to the Database
-    :param model: Object's class name
-    :param converter: Callable function to convert data
-    :param data: Data imported from text file
-    :return: None
-    """
-    log.info("Start to process %s objects", model)
-    objects = converter(*data)
-    log.info("Total number of %s objects - %s", model, len(objects))
-    log.info("Add %s objects to Database", model)
-    db.session.bulk_save_objects(objects)
-    log.debug("Commit Database changes")
-    db.session.commit()
-    log.info("Finish to process %s objects\n", model)
-
-
 def get_txt_dataset(source_path: str):
     """
     :param source_path:
