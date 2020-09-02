@@ -17,6 +17,8 @@ from config.postgres.model_html import HTMLExportWord, HTMLExportDefinition
 
 
 # TODO Add lex_event support
+# TODO Add normal template
+# TODO Add other languages support
 
 
 def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: str = None):
@@ -29,9 +31,10 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: str = None):
     all_words = HTMLExportWord.query.\
         filter(HTMLExportWord.event_end_id.is_(lex_event)).\
         order_by(HTMLExportWord.name).all()  # [1350:1400]
-    grouped_words = groupby(all_words, lambda ent: ent.name)
 
+    grouped_words = groupby(all_words, lambda ent: ent.name)
     group_words = {k: list(g) for k, g in grouped_words}
+
     grouped_letters = groupby(group_words, lambda ent: ent[0].upper())
     names_grouped_by_letter = {k: list(g) for k, g in grouped_letters}
 
@@ -89,9 +92,10 @@ def generate_dictionary_file(entities_language: str = "loglan", style: str = DEF
     data = prepare_dictionary_e(style) if entities_language == "english" else prepare_dictionary_l(style)
 
     template = env.get_template(f'words_{style}.html')
-    t = template.render(dictionary=data, technical=prepare_technical_info())
-
-    file = f"{entities_language}_({datetime.now().strftime('%y%m%d%H%M')})_{style}.html"
+    tech = prepare_technical_info()
+    t = template.render(dictionary=data, technical=tech)
+    name = "L-to-E" if entities_language == "loglan" else "E-to-L"
+    file = f"{name}-{tech['Database']}-{datetime.now().strftime('%y%m%d%H%M')}.html"
     text_file = open(file, "w", encoding="utf-8")
     text_file.write(t)
     text_file.close()
