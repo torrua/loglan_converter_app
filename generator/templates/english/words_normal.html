@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}<title>Loglan to English Dictionary</title>{% endblock %}
+{% block title %}<title>English to Loglan Dictionary</title>{% endblock %}
 {% block style %}
 <style>
 	body {
@@ -7,58 +7,33 @@
 		font-size: 14px;
 		margin-left: 20px;
 	}
-	div.lt {
-	}
-	.lt > span {
+
+	.letter > span {
 		font-size: 24px;
 		font-weight: bold;
 	}
-	.w, w {
+
+	.word {
 		margin-top: 20px;
 	}
-	.w_line > *:first-child {
-		font-weight: bold;
-	}
-	wl {
-		font-weight: bold;
-		display: block;
-	}
-	.m, m {
-		margin-left: 10px;
-	}
-	m, d, w, us {
-		display: block;
-	}
-	.m > *:first-child {
-		margin-top: 10px;
-	}
-	.m_afx, afx {
-		color: #007F00;
-		font-style: italic;
-	}
-	.m_origin, o {
-		color: #007F00;
-		font-style: italic;
-	}
-	.t, tec, t {
-	}
-	.ds {
-	}
-	.d, d {
-		margin-left: 20px;
-		margin-top: 5px;
 
+	.definitions {
+		margin-left: 20px;
+	}
+
+	.w_line {
+		font-weight: bold;
+	}
+	.d_line {
+		margin-top: 5px;
 		text-align: justify;
 		max-width: 60%;
 		min-width: 400px;
 	}
-	.du, du {
-		font-weight: bold;
-	}
-	.u, us {
-		margin-top: 5px;
-		max-width: 40%;
-		min-width: 400px;
+
+	.w_origin {
+		color: #007F00;
+		font-style: italic;
 	}
 	k {
 		color: #0000FF;
@@ -66,6 +41,9 @@
 	}
 	l {
 		color: #C70039;
+		font-weight: bold;
+	}
+	.w_name {
 		font-weight: bold;
 	}
 	main {
@@ -100,30 +78,19 @@
 	</ul>
 </div>
 {% endblock %}
-
 {% block words %}
 {% for letter, words in dictionary.items() %}
 <hr width="400px" align="left">
 <a name="{{ letter }}"></a>
-<div class="lt"><span class="lt">{{ letter }}</span>
-{%- for word in words %}
-<w wid="{{ word.name.lower() }}"><wl>{{ word.name }},</wl>
-<ms>
-	{%- for meaning in word.meanings %}
-	<m>
-		<t>{{ meaning.technical }}</t>
-		<ds>
-		{%- for definition in meaning.definitions %}
+<div class="letter"><span class="letter">{{ letter }}</span>
+{%- for word, definitions in words.items() %}
+	<div class="word" wid="{{ word.lower() }}"><div class="w_line"><span class="w_name">{{ word }}</span>,</div>
+		<div class="definitions">
+		{%- for definition in definitions %}
 			{{definition}}
 		{%- endfor %}
-		</ds>
-		{%- if meaning.used_in %}
-		<us>Used In: {{ meaning.used_in }}</us>
-		{%- endif %}
-	</m>
-	{%- endfor %}
-</ms>
-</w>
+		</div>
+	</div>
 {%- endfor %}
 </div>
 {% endfor %}

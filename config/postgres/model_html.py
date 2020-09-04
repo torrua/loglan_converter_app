@@ -57,7 +57,7 @@ class HTMLExportDefinition(ExportDefinition):
         tags = {
             "normal": [
                 '<span class="dg">(%s)</span>', '<span class="dt">[%s]</span> ', ' <span class="db">%s</span>',
-                f'<div class="d" id={self.id}>%s</div>', '<div class="d_line">%s</div>',
+                f'<span class="definition" id={self.id}>%s</span>', '<div class="d_line">%s</div>',
                 '<span class="w_name">%s</span>, ', '<span class="w_origin">&lt;%s&gt;</span> ', ],
             "ultra": ['(%s)', '[%s] ', ' %s', '<d>%s</d>', '<ld>%s</ld>', '<wn>%s</wn>, ', '<o>&lt;%s&gt;</o> ', ],
         }
@@ -90,8 +90,8 @@ class HTMLExportDefinition(ExportDefinition):
         tags = {
             # usage, gram, body, tags, definition
             "normal": [
-                '<span class="du">%s</span> ', '<span class="dg">(%s)</span> ', '<span class="db"></span>',
-                ' <span class="dt">[%s]</span>', f'<div class="d" id={self.id}>%s</div>', ],
+                '<span class="du">%s</span> ', '<span class="dg">(%s)</span> ', '<span class="db">%s</span>',
+                ' <span class="dt">[%s]</span>', f'<div class="definition" id={self.id}>%s</div>', ],
             "ultra": ['<du>%s</du> ', '(%s) ', '%s', ' [%s]', '<d>%s</d>', ],
         }
         t_d_usage, t_d_gram, t_d_body, t_d_tags, t_definition = tags[style]
