@@ -14,6 +14,7 @@ from config.postgres import run_with_context
 from config.postgres.model_base import Key
 from config.postgres.model_export import ExportSetting, ExportEvent
 from config.postgres.model_html import HTMLExportWord, HTMLExportDefinition
+from generator import HTML_EXPORT_DIRECTORY_PATH_LOCAL as EXPORT_PATH
 
 
 # TODO Add other languages support
@@ -145,7 +146,8 @@ def generate_dictionary_file(
 
     name = "L-to-E" if entities_language == "loglan" else "E-to-L"
     timestamp = datetime.now().strftime('%y%m%d%H%M') if not timestamp else timestamp
-    file = f"{name}-{tech['Database']}-{timestamp}_{style[0].lower()}.html"
+
+    file = f"{EXPORT_PATH}{name}-{tech['Database']}-{timestamp}_{lex_event.suffix}_{style[0].lower()}.html"
     text_file = open(file, "w", encoding="utf-8")
     text_file.write(render)
     text_file.close()
