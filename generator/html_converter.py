@@ -25,24 +25,29 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: int = None):
     :param lex_event:
     :return:
     """
-
+    log.info("Start Loglan dictionary preparation")
     if lex_event is None:
         lex_event = ExportEvent.query.order_by(-ExportEvent.id).first().id
-
+    log.debug("Get data from Database")
     all_words = HTMLExportWord.get_items_by_event(lex_event).all()  # [1350:1400]
 
+    log.debug("Grouping %s words by name", len(all_words))
     grouped_words = groupby(all_words, lambda ent: ent.name)
+    log.debug("Making dictionary with grouped words")
     group_words = {k: list(g) for k, g in grouped_words}
 
+    log.debug("Grouping words by first letter")
     grouped_letters = groupby(group_words, lambda ent: ent[0].upper())
+    log.debug("Making dictionary with grouped letters")
     names_grouped_by_letter = {k: list(g) for k, g in grouped_letters}
 
+    log.debug("Making main export dictionary")
     dictionary = {}
     for letter, names in names_grouped_by_letter.items():
         dictionary[letter] = [{
             "name": group_words[name][0].name,
             "meanings": [w.meaning(style=style) for w in group_words[name]]} for name in names]
-
+    log.info("End Loglan dictionary preparation - %s items totally", len(dictionary))
     return dictionary
 
 
@@ -129,6 +134,7 @@ def generate_dictionary_file(
     template = env.get_template(f'{entities_language}/words_{style}.html')
     tech = prepare_technical_info(lex_event=lex_event)
     render = template.render(dictionary=data, technical=tech)
+
     name = "L-to-E" if entities_language == "loglan" else "E-to-L"
     timestamp = datetime.now().strftime('%y%m%d%H%M') if not timestamp else timestamp
     file = f"{name}-{tech['Database']}-{timestamp}_{style[0].lower()}.html"
@@ -145,7 +151,7 @@ def generate_dictionaries():
     start_time = time.monotonic()
     timestamp = datetime.now().strftime('%y%m%d%H%M')
     generate_dictionary_file(entities_language="loglan", timestamp=timestamp)
-    generate_dictionary_file(entities_language="english", timestamp=timestamp)
+    # generate_dictionary_file(entities_language="english", timestamp=timestamp)
     log.info("ELAPSED TIME IN MINUTES: %s\n", timedelta(minutes=time.monotonic() - start_time))
 
 
