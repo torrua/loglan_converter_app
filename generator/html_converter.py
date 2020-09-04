@@ -11,15 +11,15 @@ from jinja2 import Environment, PackageLoader
 
 from config import log, DEFAULT_LANGUAGE, DEFAULT_STYLE
 from config.postgres import run_with_context
-from config.postgres.model_base import Key
-from config.postgres.model_export import ExportSetting, ExportEvent
+from config.postgres.model_base import Key, Event
+from config.postgres.model_export import ExportSetting
 from config.postgres.model_html import HTMLExportWord, HTMLExportDefinition
 from generator import HTML_EXPORT_DIRECTORY_PATH_LOCAL as EXPORT_PATH
 
 
 # TODO Add other languages support
 
-def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: int = None):
+def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: Event = None):
     """
 
     :param style:
@@ -28,9 +28,10 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: int = None):
     """
     log.info("Start Loglan dictionary preparation")
     if lex_event is None:
-        lex_event = ExportEvent.query.order_by(-ExportEvent.id).first().id
+        lex_event = Event.latest()
+
     log.debug("Get data from Database")
-    all_words = HTMLExportWord.get_items_by_event(lex_event).all()  # [1350:1400]
+    all_words = HTMLExportWord.get_items_by_event(event_id=lex_event.id).all()  # [1350:1400]
 
     log.debug("Grouping %s words by name", len(all_words))
     grouped_words = groupby(all_words, lambda ent: ent.name)
@@ -55,7 +56,7 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: int = None):
 def prepare_dictionary_e(
         style: str = DEFAULT_STYLE,
         key_language: str = DEFAULT_LANGUAGE,
-        lex_event: int = None):
+        lex_event: Event = None):
     """
 
     :param style:
@@ -63,18 +64,18 @@ def prepare_dictionary_e(
     :param lex_event:
     :return:
     """
-    def check_events(definition: HTMLExportDefinition, event: int):
-        if definition.source_word.event_start_id > event:
+    def check_events(definition: HTMLExportDefinition, event_id: int):
+        if definition.source_word.event_start_id > event_id:
             return False
         if definition.source_word.event_end_id is None:
             return True
-        if definition.source_word.event_end_id > event:
+        if definition.source_word.event_end_id > event_id:
             return True
         return False
     log.info("Start %s dictionary preparation", key_language.capitalize())
 
-    if lex_event is None:
-        lex_event = ExportEvent.query.order_by(-ExportEvent.id).first().id
+    if not lex_event:
+        lex_event = Event.latest()
 
     log.debug("Get Key's data from Database")
     all_keys = Key.query.order_by(Key.word)\
@@ -87,7 +88,7 @@ def prepare_dictionary_e(
     log.debug("Making dictionary with grouped keys")
     group_keys = {
         k: [HTMLExportDefinition.export_for_english(d, word=k, style=style)
-            for d in list(g)[0].definitions if check_events(d, lex_event)]
+            for d in list(g)[0].definitions if check_events(d, lex_event.id)]
         for k, g in grouped_keys}
     log.debug("Grouping keys by first letter")
     grouped_letters = groupby(all_keys_words, lambda ent: ent[0].upper())
@@ -102,29 +103,27 @@ def prepare_dictionary_e(
     return dictionary
 
 
-def prepare_technical_info(lex_event: int = None):
+def prepare_technical_info(lex_event: Event = None):
     """
     :param lex_event:
     :return:
     """
     generation_date = datetime.now().strftime("%d.%m.%Y")
     db_release = ExportSetting.query.order_by(-ExportSetting.id).first().db_release
+    if not lex_event:
+        lex_event = Event.latest()
 
-    if lex_event is None:
-        lex_event = ExportEvent.query.order_by(-ExportEvent.id).first().id
-
-    event = ExportEvent.query.filter(ExportEvent.id == lex_event).first().annotation
     return {
         "Generated": generation_date,
         "Database": db_release,
-        "LexEvent": event, }
+        "LexEvent": lex_event.annotation, }
 
 
 @run_with_context
 def generate_dictionary_file(
         entities_language: str = "loglan",
         style: str = DEFAULT_STYLE,
-        lex_event: int = None,
+        lex_event: Event = None,
         timestamp: str = None):
     """
     :param entities_language: [ loglan, english ]
@@ -132,6 +131,9 @@ def generate_dictionary_file(
     :param lex_event:
     :param timestamp:
     """
+
+    if not lex_event:
+        lex_event = Event.latest()
 
     env = Environment(loader=PackageLoader('generator', 'templates'))
 
