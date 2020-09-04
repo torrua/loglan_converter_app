@@ -187,6 +187,10 @@ class Event(db.Model, DictionaryBase, DBBase, ConvertEvent):
     annotation = db.Column(db.String(16), nullable=False)
     suffix = db.Column(db.String(16), nullable=False)
 
+    @classmethod
+    def latest(cls):
+        return cls.query.order_by(-cls.id).first()
+
 
 class Key(db.Model, DictionaryBase, DBBase, ConvertKey):
     """
