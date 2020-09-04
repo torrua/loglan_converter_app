@@ -8,7 +8,7 @@ from __future__ import annotations
 import re
 from datetime import datetime
 from typing import Set, List, Union, Optional
-from sqlalchemy import exists
+from sqlalchemy import exists, or_
 
 from config.postgres import db
 from config.postgres.model_convert import ConvertAuthor, ConvertEvent, \
@@ -605,6 +605,13 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
                 s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
                 for s in sources if s != "y" and s != "r"]
         return sources if not as_objects else Word.query.filter(Word.name.in_(sources)).all()
+
+    @classmethod
+    def get_items_by_event(cls, event_id: str):
+        """Return request"""
+        return cls.query.filter(cls.event_start_id <= event_id) \
+            .filter(or_(cls.event_end_id > event_id, cls.event_end_id.is_(None))) \
+            .order_by(cls.name)
 
 
 class WordSource(InitBase):

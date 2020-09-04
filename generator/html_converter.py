@@ -6,7 +6,6 @@ HTML Generator
 import time
 from datetime import datetime, timedelta
 from itertools import groupby
-from sqlalchemy import or_
 
 from jinja2 import Environment, PackageLoader
 
@@ -30,11 +29,7 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: int = None):
     if lex_event is None:
         lex_event = ExportEvent.query.order_by(-ExportEvent.id).first().id
 
-    all_words = HTMLExportWord.query \
-        .filter(HTMLExportWord.event_start_id <= lex_event) \
-        .filter(or_(HTMLExportWord.event_end_id > lex_event,
-                    HTMLExportWord.event_end_id.is_(None)))\
-        .order_by(HTMLExportWord.name).all()  # [1350:1400]
+    all_words = HTMLExportWord.get_items_by_event(lex_event).all()  # [1350:1400]
 
     grouped_words = groupby(all_words, lambda ent: ent.name)
     group_words = {k: list(g) for k, g in grouped_words}
