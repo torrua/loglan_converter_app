@@ -155,7 +155,7 @@ class HTMLExportWord(ExportWord):
 
         html_affixes = t_afx % self.e_affixes if self.e_affixes else ''
         html_match = t_match % self.match if self.match else ''
-        html_type = t_type% self.type.type if self.type.type else ''
+        html_type = t_type % self.type.type if self.type.type else ''
         html_source = t_author % self.e_source if self.e_source else ''
         html_year = t_year % self.e_year if self.e_year else ''
         html_rank = t_rank % self.rank if self.rank else ''
