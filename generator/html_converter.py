@@ -70,27 +70,35 @@ def prepare_dictionary_e(
         if definition.source_word.event_end_id > event:
             return True
         return False
+    log.info("Start %s dictionary preparation", key_language.capitalize())
 
     if lex_event is None:
         lex_event = ExportEvent.query.order_by(-ExportEvent.id).first().id
 
+    log.debug("Get Key's data from Database")
     all_keys = Key.query.order_by(Key.word)\
         .filter(Key.language == key_language).all()  # [1600:1700]
     all_keys_words = [key.word for key in all_keys]
 
+    log.debug("Grouping %s keys by word", len(all_keys))
     grouped_keys = groupby(all_keys, lambda ent: ent.word)
 
+    log.debug("Making dictionary with grouped keys")
     group_keys = {
         k: [HTMLExportDefinition.export_for_english(d, word=k, style=style)
             for d in list(g)[0].definitions if check_events(d, lex_event)]
         for k, g in grouped_keys}
-
+    log.debug("Grouping keys by first letter")
     grouped_letters = groupby(all_keys_words, lambda ent: ent[0].upper())
+    log.debug("Making dictionary with grouped letters")
     key_names_grouped_by_letter = {k: sorted(list(g)) for k, g in grouped_letters}
 
-    return {
+    log.debug("Making main export dictionary")
+    dictionary = {
         letter: {name: group_keys[name] for name in names}
         for letter, names in key_names_grouped_by_letter.items()}
+    log.info("End %s dictionary preparation - %s items totally", key_language.capitalize(), len(dictionary))
+    return dictionary
 
 
 def prepare_technical_info(lex_event: int = None):
@@ -151,7 +159,7 @@ def generate_dictionaries():
     start_time = time.monotonic()
     timestamp = datetime.now().strftime('%y%m%d%H%M')
     generate_dictionary_file(entities_language="loglan", timestamp=timestamp)
-    # generate_dictionary_file(entities_language="english", timestamp=timestamp)
+    generate_dictionary_file(entities_language="english", timestamp=timestamp)
     log.info("ELAPSED TIME IN MINUTES: %s\n", timedelta(minutes=time.monotonic() - start_time))
 
 
