@@ -607,7 +607,7 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         return sources if not as_objects else Word.query.filter(Word.name.in_(sources)).all()
 
     @classmethod
-    def get_items_by_event(cls, event_id: str):
+    def get_items_by_event(cls, event_id: int):
         """Return request"""
         return cls.query.filter(cls.event_start_id <= event_id) \
             .filter(or_(cls.event_end_id > event_id, cls.event_end_id.is_(None))) \
