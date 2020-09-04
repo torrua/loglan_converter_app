@@ -114,15 +114,18 @@ class HTMLExportWord(ExportWord):
         :param style:
         :return:
         """
-        if (not self.origin) and (not self.origin_x):
+        o = self.origin
+        ox = self.origin_x
+
+        if (not o) and (not ox):
             return ''
 
-        if not self.origin_x:
-            origin = self.origin
-        elif not self.origin:
-            origin = self.origin_x
+        if not ox:
+            origin = o
+        elif not o:
+            origin = ox
         else:
-            origin = f'{self.origin}={self.origin_x}'
+            origin = f'{o}={ox}'
 
         if style == "normal":
             return f'<span class="m_origin">&lt;{origin}&gt;</span> '
