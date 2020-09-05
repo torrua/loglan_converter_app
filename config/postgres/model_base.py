@@ -50,6 +50,9 @@ class InitBase:
     def __repr__(self) -> str:
         return str(self.__dict__)
 
+    def __str__(self) -> str:
+        return str({k: v for k, v in self.__dict__.items() if not str(k).startswith("_")})
+
     def __init__(self, *initial_data, **kwargs):
         # TODO Check creation from dictionary
         for dictionary in initial_data:
@@ -189,6 +192,9 @@ class Event(db.Model, DictionaryBase, DBBase, ConvertEvent):
 
     @classmethod
     def latest(cls):
+        """
+        :return: the latest (current) event
+        """
         return cls.query.order_by(-cls.id).first()
 
 
@@ -369,7 +375,7 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
             if all(isinstance(item, Key) for item in source):
                 return self.link_keys_from_list_of_obj(source=source)
 
-            elif all(isinstance(item, str) for item in source):
+            if all(isinstance(item, str) for item in source):
                 return self.link_keys_from_list_of_str(source=source, language=language)
 
         raise TypeError("Source for keys should have a string, "
@@ -542,6 +548,10 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         return self.get_afx()
 
     def get_sources_prim(self, prim_type: str):
+        """
+        :param prim_type:
+        :return:
+        """
         existing_prim_types = ["C", "D", "I", "L", "N", "O", "S", ]
         if prim_type not in existing_prim_types:
             return []
@@ -566,6 +576,8 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
 
         if prim_type == "S":  # TODO
             return f"{self.name}: {self.origin} < {self.origin_x}"
+
+        return list()
 
     def _get_sources_c_prim(self) -> List[WordSource]:
         """
@@ -604,10 +616,10 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         if self.type.group == "Cpx":
             sources = self.origin.replace("(", "").replace(")", "").replace("/", "")
             sources = str(sources).split("+")
-            sources = [s for s in sources if s != "y" and s != "r" and s != "n"]
+            sources = [s for s in sources if s not in ["y", "r", "n"]]
             sources = [
                 s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
-                for s in sources if s != "y" and s != "r"]
+                for s in sources if s not in ["y", "r"]]
         return sources if not as_objects else Word.query.filter(Word.name.in_(sources)).all()
 
     @classmethod
@@ -640,6 +652,9 @@ class WordSource(InitBase):
 
     @property
     def as_string(self):  # For example 3/5R mesto
+        """
+        :return:
+        """
         return f"{self.coincidence}/{self.length}{self.language} {self.transcription}"
 
 
