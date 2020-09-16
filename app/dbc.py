@@ -28,12 +28,10 @@ from converters.txt_to_pg import convert_txt_to_pg
 from converters.pg_to_txt import convert_pg_to_txt
 from converters.ac_to_pg import convert_ac_to_pg
 from converters.pg_to_ac import convert_pg_to_ac
-from config import create_app
-
 
 from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import download_file
-from config.postgres import all_models_pg, check_db_connection
+from config.postgres import all_models_pg, check_db_connection, create_app_lod
 
 popup_message_title = 'Loglan Converter'
 msg_success_export = f'Export completed successfully!'
@@ -53,7 +51,7 @@ def app_context():
         SQLALCHEMY_DATABASE_URI = postgres_uri
         SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    return create_app(AppConfig).app_context()
+    return create_app_lod(AppConfig).app_context()
 
 
 def convert_with_context(function):

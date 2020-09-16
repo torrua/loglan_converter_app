@@ -88,7 +88,7 @@ def run_with_context(function):
             SQLALCHEMY_TRACK_MODIFICATIONS = False
 
         try:
-            context = create_app(AppConfig).app_context()
+            context = create_app_lod(AppConfig).app_context()
         except ValueError as err:
             log.error(err)
             return
@@ -98,3 +98,10 @@ def run_with_context(function):
         context.pop()
 
     return wrapper
+
+
+def create_app_lod(config):
+    """
+    Create app
+    """
+    return create_app(config, database=db)

@@ -9,15 +9,17 @@ from converters.txt_to_pg import convert_txt_to_pg
 from converters.txt_to_ac import convert_txt_to_ac
 
 # TODO Unify logging and resulting
+# TODO Add functions for C-Prim words for find vernaculars
+# TODO Check affixes for pred(a,i,o,u,e)
+# https://github.com/rotati/wiki/wiki/Git:-Combine-all-messy-commits-into-one-commit-before-merging-to-Master-branch
 
-TESTS = [2, 3, 4, 6]
+TESTS = [5, 6, ]
 
 if __name__ == "__main__":
 
-    from config import create_app
-    from config.postgres import CLIConfig
+    from config.postgres import CLIConfig, create_app_lod
 
-    with create_app(CLIConfig).app_context():
+    with create_app_lod(CLIConfig).app_context():
 
         for SELECTOR in TESTS:
             if SELECTOR == 1:

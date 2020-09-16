@@ -19,7 +19,7 @@ logging.basicConfig(
 
 log = logging.getLogger(__name__)
 
-EN = "en"
+EN, RU = "en", "ru"
 DEFAULT_LANGUAGE = os.getenv("DEFAULT_LANGUAGE", EN)
 DEFAULT_STYLE = os.getenv("DEFAULT_STYLE", "ultra")
 SEPARATOR = "@"
@@ -28,7 +28,7 @@ root_pattern = r".*\\"
 root_directory = re.search(root_pattern, sys.executable)[0]
 
 
-def create_app(config):
+def create_app(config, database):
     """
     Create app
     """
@@ -39,9 +39,8 @@ def create_app(config):
     app.config.from_object(config)
 
     # db initialization
-    from config.postgres.model_base import db
+    database.init_app(app)
 
-    db.init_app(app)
-    # db.create_all(app=app) when use need to re-initialize db
+    # database.create_all(app=app) when use need to re-initialize db
 
     return app

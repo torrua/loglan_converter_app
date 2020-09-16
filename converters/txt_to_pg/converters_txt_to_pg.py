@@ -226,13 +226,16 @@ def converter_keys(
         keys = ("id_old", "position", "usage", "grammar_code", "body", "case_tags", )
         return dict(zip(keys, wd_line))
 
-    key_pattern = r"(?<=\«)(.+?)(?=\»)"
+    def keys_from_string(string: str) -> List[str]:
+        key_pattern = r"(?<=\«)(.+?)(?=\»)"
+        return re.findall(key_pattern, string)
+
     all_keys = []
     without_keys_count = 0
 
     for definition_line in definitions:
         body = dict_from_word_definition(definition_line)["body"]
-        keys_from_line = re.findall(key_pattern, body)
+        keys_from_line = keys_from_string(body)
 
         if not keys_from_line:
             without_keys_count += 1

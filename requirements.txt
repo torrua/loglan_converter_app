@@ -8,3 +8,5 @@ pywin32
 pyinstaller
 pyodbc
 jinja2
+reverso-api
+pymorphy2
