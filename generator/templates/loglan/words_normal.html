@@ -7,6 +7,26 @@
 		font-size: 14px;
 		margin-left: 20px;
 	}
+	main {
+		position: absolute;
+		top: 60px;
+		bottom: 20px;
+		overflow-y: scroll;
+	}
+	::-webkit-scrollbar {
+		width: 0px;  /* Remove scrollbar space */
+		background: transparent;  /* Optional: just make scrollbar invisible */
+	}
+	nav.fixed-top {
+		background-color: black;
+		height: 50px;
+		color: white;
+	}
+	nav.fixed-bottom {
+		height: 20px;
+		text-align: right;
+	}
+
 	.letter > span {
 		font-size: 24px;
 		font-weight: bold;
@@ -17,7 +37,10 @@
 	.word_line > *:first-child {
 		font-weight: bold;
 	}
-	.meaning {
+	.meanings > *:not(:first-child) {
+		margin-top: 10px;
+	}
+	.meanings > * {
 		margin-left: 10px;
 	}
 	.m_afx {
@@ -52,25 +75,6 @@
 	l {
 		color: #C70039;
 		font-weight: bold;
-	}
-	main {
-		position: absolute;
-		top: 60px;
-		bottom: 20px;
-		overflow-y: scroll;
-	}
-	::-webkit-scrollbar {
-		width: 0px;  /* Remove scrollbar space */
-		background: transparent;  /* Optional: just make scrollbar invisible */
-	}
-	nav.fixed-top {
-		background-color: black;
-		height: 50px;
-		color: white;
-	}
-	nav.fixed-bottom {
-		height: 20px;
-		text-align: right;
 	}
 </style>
 {% endblock %}
