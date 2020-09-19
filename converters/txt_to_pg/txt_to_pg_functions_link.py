@@ -56,6 +56,7 @@ def db_link_complexes(words: List[List[str]]) -> None:
         return [element.strip() for element in set_as_str.split(separator)]
 
     all_words = Word.get_all()
+    all_word_names = [w.name for w in all_words]
     for item in words:
         if not item[10]:  # If 'Used In' field does not exist
             continue
@@ -63,7 +64,6 @@ def db_link_complexes(words: List[List[str]]) -> None:
         # On idea only one parent should always be here
         # parents = Word.query.filter(Word.id_old == int(item[0])).all()
         parents = [word for word in all_words if word.id_old == int(item[0])]  # LOCAL
-
         if len(parents) > 1:
             log.warning(
                 "The are %s for this word!\n%s",
@@ -71,9 +71,12 @@ def db_link_complexes(words: List[List[str]]) -> None:
         for parent in parents:
             child_names = get_elements_from_str(item[10])
             # children = Word.query.filter(Word.name.in_(child_names)).order_by(Word.id.asc()).all()
-            children = [word for word in all_words if (word and (word.name in child_names))]  # LOCAL
+            children = [w for w in all_words if (w and (w.name in child_names))]  # LOCAL
+
             children = [child for child in children if child]
-            # TODO There are unspecified words, for example, <zvovai>
+            # In case if any unspecified word exist in used_in list
+            [log.debug(parent, child) for child in child_names if child not in all_word_names]
+
             parent.add_children(children)
             log_text = f"{parent.name} {' ' * (26 - len(parent.name))}-> {child_names}"
             log.debug(log_text)
