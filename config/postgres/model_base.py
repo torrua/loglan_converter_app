@@ -54,7 +54,6 @@ class InitBase:
         return str({k: v for k, v in self.__dict__.items() if not str(k).startswith("_")})
 
     def __init__(self, *initial_data, **kwargs):
-        # TODO Check creation from dictionary
         for dictionary in initial_data:
             for key in dictionary:
                 setattr(self, key, dictionary[key])
