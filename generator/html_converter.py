@@ -29,16 +29,17 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: Event = None):
     log.info("Start Loglan dictionary preparation")
     if lex_event is None:
         lex_event = Event.latest()
+    log.debug("Required Lexical Event is %s", lex_event.name)
 
     log.debug("Get data from Database")
     all_words = HTMLExportWord.get_items_by_event(event_id=lex_event.id).all()  # [1350:1400]
 
-    log.debug("Grouping %s words by name", len(all_words))
+    log.debug("Grouping total %s words by name", len(all_words))
     grouped_words = groupby(all_words, lambda ent: ent.name)
     log.debug("Making dictionary with grouped words")
     group_words = {k: list(g) for k, g in grouped_words}
 
-    log.debug("Grouping words by first letter")
+    log.debug("Grouping %s word groups by first letter", len(group_words))
     grouped_letters = groupby(group_words, lambda ent: ent[0].upper())
     log.debug("Making dictionary with grouped letters")
     names_grouped_by_letter = {k: list(g) for k, g in grouped_letters}
