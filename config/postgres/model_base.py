@@ -551,9 +551,12 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         :param prim_type:
         :return:
         """
-        existing_prim_types = ["C", "D", "I", "L", "N", "O", "S", ]
-        if prim_type not in existing_prim_types:
+        # existing_prim_types = ["C", "D", "I", "L", "N", "O", "S", ]
+
+        if not self.type.group == "Prim":
             return []
+
+        prim_type = self.type.type[:1]
 
         if prim_type == "C":
             return self._get_sources_c_prim()
@@ -588,6 +591,7 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         pattern_source = r"\d+\/\d+\w"
         sources = str(self.origin).split(" | ")
         word_sources = []
+
         for source in sources:
             compatibility = re.search(pattern_source, source)[0]
             c_l = compatibility[:-1].split("/")
@@ -601,29 +605,41 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
 
         return word_sources
 
-    def get_sources_cpx(self, as_objects: bool = False) -> Union[str, Word]:
+    def get_sources_cpx(self, as_objects: bool = False) -> List[Union[str, Word]]:
+        """
+        Get self.origin and extract source words accordingly
+        :param as_objects: Boolean - return Word objects if true else as simple str
+        :return: List of words from which the self.name was created
+
+        Example: 'foldjacea' > ['forli', 'djano', 'cenja']
         """
 
-        :param as_objects: Boolean - return Word objects if true
-        :return:
-        """
         # these prims have switched djifoas like 'flo' for 'folma'
         switch_prims = [
             'canli', 'farfu', 'folma', 'forli', 'kutla', 'marka',
             'mordu', 'sanca', 'sordi', 'suksi', 'surna']
-        sources = []
-        if self.type.group == "Cpx":
-            sources = self.origin.replace("(", "").replace(")", "").replace("/", "")
-            sources = str(sources).split("+")
-            sources = [s for s in sources if s not in ["y", "r", "n"]]
-            sources = [
-                s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
-                for s in sources if s not in ["y", "r"]]
+
+        if not self.type.group == "Cpx":
+            return []
+
+        sources = self.origin.replace("(", "").replace(")", "").replace("/", "")
+        sources = str(sources).split("+")
+        sources = [s for s in sources if s not in ["y", "r", "n"]]
+        sources = [
+            s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
+            for s in sources if s not in ["y", "r"]]
         return sources if not as_objects else Word.query.filter(Word.name.in_(sources)).all()
 
     @classmethod
-    def get_items_by_event(cls, event_id: int):
-        """Return request"""
+    def get_items_by_event(cls, event_id: int = None):
+        """
+        Filtered request by specified event_id
+        :param event_id: Latest if None
+        :return: Request
+        """
+        if not event_id:
+            event_id = Event.latest().id
+
         return cls.query.filter(cls.event_start_id <= event_id) \
             .filter(or_(cls.event_end_id > event_id, cls.event_end_id.is_(None))) \
             .order_by(cls.name)
@@ -650,7 +666,7 @@ class WordSource(InitBase):
     transcription: str = None
 
     @property
-    def as_string(self):  # For example 3/5R mesto
+    def as_string(self):  # For example, '3/5R mesto'
         """
         :return:
         """
