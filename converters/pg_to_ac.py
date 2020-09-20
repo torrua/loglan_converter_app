@@ -19,13 +19,13 @@ def get_data_from_schema():
     """
     log.info("Starting to export data from db")
     convert_schema = zip(export_models_pg, export_models_ac)
-    # TODO Add logging
     ac_session = session()
     for export_model, import_model in convert_schema:
         log.info("Starting %s export", export_model.__name__)
         raw_table_lines = export_pg_model_to_list_of_str(export_model)
         prepared_lines = [line.strip().split(SEPARATOR) for line in raw_table_lines]
         objects = [import_model(**import_model.import_(line)) for line in prepared_lines]
+        log.debug("The total number of objects for adding: %s", len(objects))
         ac_session.bulk_save_objects(objects)
         ac_session.commit()
         log.info("Ending %s export - %s object(s)", export_model.__name__, len(objects))
