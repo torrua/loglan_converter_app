@@ -239,12 +239,12 @@ class Type(db.Model, DictionaryBase, DBBase, ConvertType):
     """
     __tablename__ = t_name_types
 
-    id = db.Column(db.Integer, primary_key=True)
-    type = db.Column(db.String(16), nullable=False)
-    type_x = db.Column(db.String(16), nullable=False)
-    group = db.Column(db.String(16))
-    parentable = db.Column(db.Boolean, nullable=False)
-    description = db.Column(db.String(255))
+    id = db.Column(db.Integer, primary_key=True)  # E.g. 4, 8
+    type = db.Column(db.String(16), nullable=False)  # E.g. 2-Cpx, C-Prim
+    type_x = db.Column(db.String(16), nullable=False)  # E.g. Predicate, Predicate
+    group = db.Column(db.String(16))  # E.g. Cpx, Prim
+    parentable = db.Column(db.Boolean, nullable=False)  # E.g. True, False
+    description = db.Column(db.String(255))  # E.g. Two-term Complex, ...
 
 
 class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
