@@ -23,6 +23,7 @@ class HTMLExportDefinition(ExportDefinition):
         tc_log = '</l>'
 
         return body \
+            .replace("<", "&lt;").replace(">", "&gt;") \
             .replace("«", to_key).replace("»", tc_key) \
             .replace("{", to_log).replace("}", tc_log) \
             .replace("...", "…").replace("--", "—")
