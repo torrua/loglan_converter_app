@@ -1,8 +1,14 @@
+# -*- coding: utf-8 -*-
 """
 Module for check database data
 """
+
 import re
-from config.postgres.model_base import Word, Definition
+
+from sqlalchemy import any_
+
+from config import log
+from config.postgres.model_base import Word, Definition, Type, Syllable
 
 
 def check_tag_match(extended_result: bool = False):
@@ -30,56 +36,46 @@ def check_tag_match(extended_result: bool = False):
 
 
 def check_sources_primitives():
-    words = Word.get_all()
-    for word in words:
-        if word.type.type == "C-Prim" and " | " not in word.origin:
-            print(word.__dict__)
+    c_type = Type.query.filter(Type.type == "C-Prim").first()
+    words = Word.query.filter(Word.type_id == c_type.id).filter(~Word.origin.like("% | %")).all()
+    [print(word.__dict__) for word in words]
 
 
 def check_sources_prim_d():
-    words = Word.get_all()
-    for word in words:
-        if word.type.type == "D-Prim":
-            print(word.get_sources_prim("D"))
-
-
-def check_sources_prim(prim_type: str):
-    words = Word.get_all()
-    for word in words:
-        if word.type.type == f"{prim_type}-Prim":
-            print(word.get_sources_prim(prim_type))
+    d_type = Type.query.filter(Type.type == "D-Prim").first()
+    words = Word.query.filter(Word.type_id == d_type.id).all()
+    [print(word.get_sources_prim()) for word in words]
 
 
 def check_complex_sources():
-    words = Word.get_all()
+    log.info("Start checking sources of Cpxes")
+    cpx_type_ids = [t.id for t in Type.query.filter(Type.group == "Cpx").all()]
+    words = Word.query.filter(Word.type_id.in_(cpx_type_ids)).all()
     for word in words:
+        log.debug("Checking word: %s", word.name)
         trigger = 0
-        if word.type.group == "Cpx":
-            sources = word.get_sources_cpx()
-            for s in sources:
-                w = Word.query.filter(Word.name == s).first()
-                if not w:
-                    trigger = 1
-                    print(f"Word '{s}' is not in the Dictionary")
+        sources = word.get_sources_cpx()
+        for s in sources:
+            if not Word.query.filter(Word.name == s).first():
+                trigger = 1
+                print(f"Word '{s}' is not in the Dictionary")
         if trigger:
             print(f"{word.id_old} |\t{word.name} |\t{word.origin} |\t{word.origin_x}")
+    log.info("Finish checking sources of Cpxes")
 
 
 def check_unintelligible_ccc():
-    unintelligible_ccc = [
-        "cdz", "cvl", "ndj", "ndz",
-        "dcm", "dct", "dts", "pdz",
-        "gts", "gzb", "svl", "jdj",
-        "jtc", "jts", "jvr", "tvl",
-        "kdz", "vts", "mzb", ]
+    log.info("Start checking unintelligible CCC")
 
-    for word in Word.get_all():
-        if any(x in word.name for x in unintelligible_ccc):
-            print(word.__dict__)
+    unintelligible_ccc = [s.name for s in Syllable.query.filter(Syllable.type == "UnintelligibleCCC").all()]
+    ccc_filter = Word.name.like(any_([f"%{ccc}%" for ccc in unintelligible_ccc]))
+    words = Word.get_items_by_event().filter(ccc_filter).all()
+    [print(word.name) for word in words]
+    log.info("Finish checking unintelligible CCC")
 
 
 if __name__ == "__main__":
     from config.postgres import CLIConfig, create_app_lod
 
     with create_app_lod(CLIConfig).app_context():
-        pass
+        check_unintelligible_ccc()
