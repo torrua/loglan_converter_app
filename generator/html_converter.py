@@ -32,7 +32,7 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: Event = None):
     log.debug("Required Lexical Event is %s", lex_event.name)
 
     log.debug("Get data from Database")
-    all_words = HTMLExportWord.get_items_by_event(event_id=lex_event.id).all()  # [1350:1400]
+    all_words = HTMLExportWord.by_event(event_id=lex_event.id).all()  # [1350:1400]
 
     log.debug("Grouping total %s words by name", len(all_words))
     grouped_words = groupby(all_words, lambda ent: ent.name)
