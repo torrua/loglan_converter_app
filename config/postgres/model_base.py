@@ -5,11 +5,13 @@ Models of LOD database
 """
 
 from __future__ import annotations
+
 import re
 from datetime import datetime
 from typing import Set, List, Union, Optional
-from sqlalchemy import exists, or_
+
 from flask_sqlalchemy import BaseQuery
+from sqlalchemy import exists, or_
 
 from config.postgres import db
 from config.postgres.model_convert import ConvertAuthor, ConvertEvent, \
@@ -266,6 +268,7 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
     notes = db.Column(db.String(255))
 
     APPROVED_CASE_TAGS = ["B", "C", "D", "F", "G", "J", "K", "N", "P", "S", "V", ]
+    KEY_PATTERN = r"(?<=\«)(.+?)(?=\»)"
 
     keys = db.relationship(Key.__name__, secondary=t_connect_keys,
                            backref="definitions", lazy='dynamic')
@@ -332,7 +335,7 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
 
     def link_keys_from_definition_body(
             self, language: str = None,
-            pattern: str = None) -> List[Key]:
+            pattern: str = KEY_PATTERN) -> List[Key]:
         """
         Extract and link keys from Definition's body
         :param language: Language of Definition's keys
@@ -340,13 +343,12 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
         :return: List of linked Key objects
         """
         language = language if language else self.language
-        pattern = r"(?<=\«)(.+?)(?=\»)" if not pattern else pattern
         keys = re.findall(pattern, self.body)
         return self.link_keys_from_list_of_str(source=keys, language=language)
 
     def link_keys(
             self, source: Union[List[Key], List[str], Key, str, None] = None,
-            language: str = None, pattern: str = None) -> Union[Key, List[Key]]:
+            language: str = None, pattern: str = KEY_PATTERN) -> Union[Key, List[Key]]:
         """
         Universal method for linking all available types of key sources with Definition
 
