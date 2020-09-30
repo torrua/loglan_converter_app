@@ -38,7 +38,7 @@ class ExportType(Type):
 class ExportWord(Word):
     @property
     def e_affixes(self) -> str:
-        w_affixes = self.get_afx()
+        w_affixes = self.affixes
         return ' '.join(sorted({afx.name.replace("-", "") for afx in w_affixes})) if w_affixes else ""
 
     @property
@@ -57,7 +57,7 @@ class ExportWord(Word):
 
     @property
     def e_usedin(self):
-        w_usedin = self.get_cpx()
+        w_usedin = self.complexes
         return ' | '.join(sorted({cpx.name for cpx in w_usedin})) if w_usedin else ""
 
     def export(self):

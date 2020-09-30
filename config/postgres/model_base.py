@@ -424,7 +424,7 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         'Word', secondary=t_connect_words,
         primaryjoin=(t_connect_words.c.parent_id == id),
         secondaryjoin=(t_connect_words.c.child_id == id),
-        backref=db.backref('parents', lazy='dynamic'),
+        backref=db.backref('_parents', lazy='dynamic'),
         lazy='dynamic')
 
     def __is_parented(self, child: Word) -> bool:
@@ -475,6 +475,7 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         new_authors = list(set(authors) - set(self.authors))
         self.authors.extend(new_authors) if new_authors else None
 
+    '''
     def get_definitions(self) -> List[Definition]:
         """
         Get all definitions of the word
@@ -482,20 +483,14 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         """
         return Definition.query.filter(Definition.id == self.id)\
             .order_by(Definition.position.asc()).all()
+    '''
 
-    def get_parents(self) -> List[Word]:
+    def query_derivatives(self,
+                          word_type: str = None,
+                          word_type_x: str = None,
+                          word_group: str = None) -> BaseQuery:
         """
-        Get all parents of the Complex predicates, Little words or Affixes
-        :return: List of Word objects
-        """
-        return self.parents.all()  # if self.type in self.__parentable else []
-
-    def get_derivatives(self,
-                        word_type: str = None,
-                        word_type_x: str = None,
-                        word_group: str = None) -> List[Word]:
-        """
-        Get all derivatives of the word, depending on its parameters
+        Query to get all derivatives of the word, depending on its parameters
         :param word_type:
         :param word_type_x:
         :param word_group:
@@ -513,43 +508,57 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         if word_group:
             result = result.filter(Type.group == word_group)
 
-        return result.order_by(Word.name.asc()).all()
+        return result.order_by(Word.name.asc())
 
-    def get_cpx(self) -> List[Word]:
+    def query_parents(self) -> BaseQuery:
         """
-        Get all the complexes that exist for this word
-        Only primitives have affixes
-        :return: list of Word objects
+        Query to get all parents of the Complexes, Little words or Affixes
+        :return: Query
         """
-        return self.get_derivatives(word_group="Cpx")
+        return self._parents  # if self.type in self.__parentable else []
 
-    def get_afx(self) -> List[Word]:
+    def query_cpx(self) -> BaseQuery:
         """
-        Get all the affixes that exist for this word
+        Query to qet all the complexes that exist for this word
         Only primitives have affixes
-        :return: list of Word objects
+        :return: Query
         """
-        return self.get_derivatives(word_type="Afx")
+        return self.query_derivatives(word_group="Cpx")
+
+    def query_afx(self) -> BaseQuery:
+        """
+        Query to qet all the affixes that exist for this word
+        Only primitives have affixes
+        :return: Query
+        """
+        return self.query_derivatives(word_type="Afx")
+
+    @property
+    def parents(self) -> List[Word]:
+        """
+        Get all parents of the Complexes, Little words or Affixes
+        :return: List of Words
+        """
+        return self.query_parents().all()
 
     @property
     def complexes(self) -> List[Word]:
         """
-        Get list of word's complexes if exist
-        :return:
+        Get all word's complexes if exist
+        :return: List of Words
         """
-        return self.get_cpx()
+        return self.query_cpx().all()
 
     @property
     def affixes(self) -> List[Word]:
         """
-        Get list of word's affixes if exist
-        :return:
+        Get all word's affixes if exist
+        :return: List of Words
         """
-        return self.get_afx()
+        return self.query_afx().all()
 
-    def get_sources_prim(self, prim_type: str):
+    def get_sources_prim(self):
         """
-        :param prim_type:
         :return:
         """
         # existing_prim_types = ["C", "D", "I", "L", "N", "O", "S", ]
@@ -606,14 +615,16 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
 
         return word_sources
 
-    def get_sources_cpx(self, as_objects: bool = False) -> List[Union[str, Word]]:
+    def get_sources_cpx(self, as_str: bool = False) -> List[Union[str, Word]]:
         """
-        Get self.origin and extract source words accordingly
-        :param as_objects: Boolean - return Word objects if true else as simple str
+        Extract source words from self.origin field accordingly
+        :param as_str: Boolean - return Word objects if False else as simple str
         :return: List of words from which the self.name was created
 
         Example: 'foldjacea' > ['forli', 'djano', 'cenja']
         """
+
+        # TODO ADD LW and Cpd
 
         # these prims have switched djifoas like 'flo' for 'folma'
         switch_prims = [
@@ -629,17 +640,19 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         sources = [
             s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
             for s in sources if s not in ["y", "r"]]
-        return sources if not as_objects else Word.query.filter(Word.name.in_(sources)).all()
+        return sources if as_str else Word.query.filter(Word.name.in_(sources)).all()
 
     @classmethod
-    def get_items_by_event(cls, event_id: int = None):
+    def by_event(cls, event_id: Union[Event, int] = None) -> BaseQuery:
         """
-        Filtered request by specified event_id
-        :param event_id: Latest if None
-        :return: Request
+        Query filtered by specified Event (latest by default)
+        :param event_id: Event object or Event.id (int)
+        :return: Query
         """
         if not event_id:
             event_id = Event.latest().id
+
+        event_id = Event.id if isinstance(event_id, Event) else int(event_id)
 
         return cls.query.filter(cls.event_start_id <= event_id) \
             .filter(or_(cls.event_end_id > event_id, cls.event_end_id.is_(None))) \
