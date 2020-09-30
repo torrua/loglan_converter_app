@@ -9,6 +9,7 @@ import re
 from datetime import datetime
 from typing import Set, List, Union, Optional
 from sqlalchemy import exists, or_
+from flask_sqlalchemy import BaseQuery
 
 from config.postgres import db
 from config.postgres.model_convert import ConvertAuthor, ConvertEvent, \
@@ -643,6 +644,33 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         return cls.query.filter(cls.event_start_id <= event_id) \
             .filter(or_(cls.event_end_id > event_id, cls.event_end_id.is_(None))) \
             .order_by(cls.name)
+
+    @classmethod
+    def by_name(cls, name: str) -> BaseQuery:
+        """
+        Word.Query filtered by specified name
+        :param name: str
+        :return: Query
+        """
+        return cls.query.filter(cls.name == name)
+
+    @classmethod
+    def by_key(cls, key: Union[Key, str]) -> BaseQuery:
+        """
+        Word.Query filtered by specified key
+        :param key: Key object or str
+        :return: Query
+        """
+        key = Key.word if isinstance(key, Key) else str(key)
+        return cls.query.join(Definition, t_connect_keys, Key).filter(Key.word == key)
+
+    @property
+    def keys_cloud(self) -> BaseQuery:
+        """
+        Query for the Keys linked with this Word
+        :return: Query
+        """
+        return Key.query.join(t_connect_keys, Definition, Word).filter(Word.id == self.id)
 
 
 class WordSource(InitBase):
