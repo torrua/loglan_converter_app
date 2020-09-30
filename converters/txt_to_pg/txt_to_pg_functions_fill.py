@@ -4,7 +4,7 @@ Module for adding dictionary data to the database
 """
 
 from config import log
-from config.postgres import db, models_pg_from_file
+from config.postgres import db, all_models_pg
 from config.postgres.model_base import Author, Event, \
     Definition, Setting, Syllable, Type, Word, WordSpell, Key
 from converters.txt_to_pg.converters_txt_to_pg import converters_pg
@@ -18,7 +18,7 @@ def get_txt_dataset(source_path: str):
     """
     return {model.__name__: download_dictionary_file(
             url=f"{source_path}{model.import_file_name}", model_name=model.__name__)
-            for model in models_pg_from_file}
+            for model in all_models_pg if model.__load_from_file__}
 
 
 def get_dataset_for_converters(source_path: str, language: str) -> dict:

@@ -31,7 +31,7 @@ from converters.pg_to_ac import convert_pg_to_ac
 
 from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import download_file
-from config.postgres import all_models_pg, check_db_connection, create_app_lod
+from config.postgres import all_models_pg, is_db_connected, app_lod
 
 popup_message_title = 'Loglan Converter'
 msg_success_export = f'Export completed successfully!'
@@ -51,7 +51,7 @@ def app_context():
         SQLALCHEMY_DATABASE_URI = postgres_uri
         SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    return create_app_lod(AppConfig).app_context()
+    return app_lod(AppConfig).app_context()
 
 
 def convert_with_context(function):
@@ -187,13 +187,13 @@ def vp_start_gui():
             messagebox.showwarning("No DB URI", "The DB URI field is empty. Please provide the path to the database.")
             return
 
-        is_db_connected = check_db_connection(uri)
-        state = "normal" if is_db_connected else "disable"
+        db_connection = is_db_connected(uri)
+        state = "normal" if db_connection else "disable"
         top.BAP.configure(state=state)
         top.BPA.configure(state=state)
         top.BPT.configure(state=state)
         top.BTP.configure(state=state)
-        if not is_db_connected:
+        if not db_connection:
             messagebox.showwarning("No Connection", "Failed to connect the database at the provided address.")
 
     top.is_from_github.bind('<Button-1>', trigger_git_local_import)

@@ -75,6 +75,6 @@ def check_unintelligible_ccc():
 
 
 if __name__ == "__main__":
-    from config.postgres import CLIConfig, create_app_lod
-    with create_app_lod(CLIConfig).app_context():
+    from config.postgres import CLIConfig, app_lod
+    with app_lod(CLIConfig).app_context():
         pass

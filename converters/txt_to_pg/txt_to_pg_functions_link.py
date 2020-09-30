@@ -7,7 +7,7 @@ Module for creating database relationships
 from typing import List
 
 from config import log
-from config.postgres import db, create_app_lod
+from config.postgres import db, app_lod
 from config.postgres.model_base import Author, Definition, Type, Word
 
 
@@ -161,5 +161,5 @@ def db_link_tables(dataset: dict) -> None:
 if __name__ == "__main__":
     from config.postgres import CLIConfig
 
-    with create_app_lod(CLIConfig).app_context():
+    with app_lod(CLIConfig).app_context():
         pass
