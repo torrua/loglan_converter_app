@@ -54,7 +54,7 @@ def check_complex_sources():
     for word in words:
         log.debug("Checking word: %s", word.name)
         trigger = 0
-        sources = word.get_sources_cpx()
+        sources = word.get_sources_cpx(as_str=True)
         for s in sources:
             if not Word.query.filter(Word.name == s).first():
                 trigger = 1
@@ -69,13 +69,12 @@ def check_unintelligible_ccc():
 
     unintelligible_ccc = [s.name for s in Syllable.query.filter(Syllable.type == "UnintelligibleCCC").all()]
     ccc_filter = Word.name.like(any_([f"%{ccc}%" for ccc in unintelligible_ccc]))
-    words = Word.get_items_by_event().filter(ccc_filter).all()
+    words = Word.by_event().filter(ccc_filter).all()
     [print(word.name) for word in words]
     log.info("Finish checking unintelligible CCC")
 
 
 if __name__ == "__main__":
     from config.postgres import CLIConfig, create_app_lod
-
     with create_app_lod(CLIConfig).app_context():
-        check_unintelligible_ccc()
+        pass
