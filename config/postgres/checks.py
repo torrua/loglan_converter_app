@@ -30,7 +30,12 @@ def check_tag_match(extended_result: bool = False):
             continue
 
         if extended_result:
-            print(df.source_word.name, result, list_tags, list_body)
+            # print(df.source_word.name, result, list_tags, list_body)
+            if len(df.source_word.definitions.all()) > 1 and not list_body:
+                second = f"\n\t{df.source_word.definitions[1].grammar} {df.source_word.definitions[1].body}"
+            else:
+                second = ""
+            print(f"{df.source_word.name},\n\t{df.grammar} {df.body}{second} >< [{df.case_tags}]\n")
         else:
             print(df.source_word.name, result)
 
