@@ -4,9 +4,9 @@ Module for adding dictionary data to the database
 """
 
 from config import log
-from config.postgres import db, all_models_pg
-from config.postgres.model_base import Author, Event, \
-    Definition, Setting, Syllable, Type, Word, WordSpell, Key
+from config.postgres import db
+from config.postgres.models import Author, Event, Key, Setting, Syllable, \
+    Type, Definition, Word, WordSpell, all_models_pg
 from converters.txt_to_pg.converters_txt_to_pg import converters_pg
 from config.text.functions import download_dictionary_file
 

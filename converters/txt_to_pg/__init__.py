@@ -4,7 +4,9 @@ import time
 from datetime import timedelta
 
 from config import log, DEFAULT_LANGUAGE
-from config.postgres import db, db_get_statistic
+from config.postgres import db
+from config.postgres.models import all_models_pg
+from converters import db_get_statistic
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
 from converters.txt_to_pg.txt_to_pg_functions_fill import db_fill_tables, get_dataset_for_converters
 from converters.txt_to_pg.txt_to_pg_functions_link import db_link_tables
@@ -39,7 +41,7 @@ def generic_convert_to_pg(dataset: dict):
 
     log.info("ELAPSED TIME IN MINUTES: %s\n",
              timedelta(minutes=time.monotonic() - start_time))
-    db_get_statistic()
+    db_get_statistic(all_models_pg)
     log.info("FINISH DB CREATION\n")
 
 

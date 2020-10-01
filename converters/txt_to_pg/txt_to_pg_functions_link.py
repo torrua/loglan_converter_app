@@ -8,7 +8,7 @@ from typing import List
 
 from config import log
 from config.postgres import db, app_lod
-from config.postgres.model_base import Author, Definition, Type, Word
+from config.postgres.models import Author, Type, Definition, Word
 
 
 def db_link_authors(words: List[List[str]]) -> None:

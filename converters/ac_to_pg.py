@@ -4,12 +4,10 @@ from typing import List
 
 from config import DEFAULT_LANGUAGE, SEPARATOR
 from config.access import session, engine
-from config.postgres.model_base import Author, Event, \
-    Key, Setting, Syllable, Type, Word, Definition
-from config.access.model_export import IOAuthor, \
-    IOEvent, IODefinition, IOSyllable, IOSetting, IOWord, \
-    IOWordSpell, IOType
-from converters.txt_to_pg.__init__ import generic_convert_to_pg
+from config.access.model_export import IOAuthor, IOEvent, IODefinition, IOSyllable, IOSetting, \
+    IOWord, IOWordSpell, IOType
+from config.postgres.models import Author, Event, Key, Setting, Syllable, Type, Definition, Word
+from converters.txt_to_pg import generic_convert_to_pg
 
 
 def convert_model_to_txt(export_model) -> List[List[str]]:

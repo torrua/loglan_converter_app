@@ -4,7 +4,7 @@ Export extensions of LOD database models
 Add export() function to db object for returning its text string presentation
 """
 
-from config.postgres.model_base import Author, Event, Syllable, Setting, Type, Word, Definition
+from config.postgres.models import Author, Event, Syllable, Setting, Type, Word, Definition
 
 
 class ExportAuthor(Author):

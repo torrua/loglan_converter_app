@@ -8,8 +8,7 @@ import re
 from datetime import datetime
 from typing import List
 from config import log
-from config.postgres.model_base import Author, Event, \
-    Definition, Setting, Syllable, Type, Word, Key
+from config.postgres.models import Author, Event, Key, Setting, Syllable, Type, Definition, Word
 
 
 def converter_authors(authors: List[List[str]]) -> List[Author]:

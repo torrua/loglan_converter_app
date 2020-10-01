@@ -42,5 +42,4 @@ def create_app(config, database):
     database.init_app(app)
 
     # database.create_all(app=app) when use need to re-initialize db
-
     return app

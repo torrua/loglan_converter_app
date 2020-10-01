@@ -8,18 +8,19 @@ from converters.pg_to_ac import convert_pg_to_ac
 from converters.txt_to_pg import convert_txt_to_pg
 from converters.txt_to_ac import convert_txt_to_ac
 
-# TODO Unify logging and resulting
 # TODO Add functions for C-Prim words for find vernaculars
-# TODO Check affixes for pred(a,i,o,u,e)
+# TODO Check affixes for pred(a,i,o,u,e) - did they added?
+# TODO Research the source of LEA (le+ra)? Should be lera?
+# TODO Add parents to Afx from LW (fo > for) make it parentable
 # https://github.com/rotati/wiki/wiki/Git:-Combine-all-messy-commits-into-one-commit-before-merging-to-Master-branch
 
-TESTS = [5, 6, ]
+TESTS = [6, ]
 
 if __name__ == "__main__":
 
-    from config.postgres import CLIConfig, create_app_lod
+    from config.postgres import CLIConfig, app_lod
 
-    with create_app_lod(CLIConfig).app_context():
+    with app_lod(CLIConfig).app_context():
 
         for SELECTOR in TESTS:
             if SELECTOR == 1:

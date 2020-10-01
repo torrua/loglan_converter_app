@@ -9,7 +9,7 @@ from typing import List
 
 from sqlalchemy.orm import synonym
 
-from config.postgres.model_base import InitBase, DBBase
+from config.postgres.models import InitBase, DBBase
 from config.sqlite import db
 
 T_NAME_KEYS = "keys"

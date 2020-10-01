@@ -11,7 +11,7 @@ from jinja2 import Environment, PackageLoader
 
 from config import log, DEFAULT_LANGUAGE, DEFAULT_STYLE
 from config.postgres import run_with_context
-from config.postgres.model_base import Key, Event
+from config.postgres.models import Event, Key
 from config.postgres.model_export import ExportSetting
 from config.postgres.model_html import HTMLExportWord, HTMLExportDefinition
 from generator import HTML_EXPORT_DIRECTORY_PATH_LOCAL as EXPORT_PATH

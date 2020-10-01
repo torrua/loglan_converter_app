@@ -8,7 +8,7 @@ import re
 from sqlalchemy import any_
 
 from config import log
-from config.postgres.model_base import Word, Definition, Type, Syllable
+from config.postgres.models import Syllable, Type, Definition, Word
 
 
 def check_tag_match(extended_result: bool = False):

@@ -14,9 +14,6 @@ from flask_sqlalchemy import BaseQuery
 from sqlalchemy import exists, or_
 
 from config.postgres import db
-from config.postgres.model_convert import ConvertAuthor, ConvertEvent, \
-    ConvertKey, ConvertSetting, ConvertSyllable, ConvertType, \
-    ConvertDefinition, ConvertWord, ConvertWordSpell
 
 t_name_authors = "authors"
 t_name_events = "events"
@@ -28,6 +25,7 @@ t_name_words = "words"
 t_name_definitions = "definitions"
 t_name_x_words = "x_words"
 t_name_word_spells = "word_spells"
+t_name_word_sources = "word_sources"
 
 db.metadata.clear()
 
@@ -76,10 +74,6 @@ class InitBase:
         Should be redefine in model's class
         :return:
         """
-
-
-class DictionaryBase(InitBase):
-    """Workaround for separating classes and making inheritance selections"""
 
 
 class DBBase:
@@ -167,7 +161,7 @@ class DBBase:
                 if not (column.foreign_keys or column.name.startswith("_"))}
 
 
-class Author(db.Model, DictionaryBase, DBBase, ConvertAuthor):
+class BaseAuthor(db.Model, InitBase, DBBase):
     """
     Author model
     """
@@ -179,9 +173,9 @@ class Author(db.Model, DictionaryBase, DBBase, ConvertAuthor):
     notes = db.Column(db.String(128))
 
 
-class Event(db.Model, DictionaryBase, DBBase, ConvertEvent):
+class BaseEvent(db.Model, InitBase, DBBase):
     """
-    Event model
+    BaseEvent model
     """
     __tablename__ = t_name_events
 
@@ -200,9 +194,9 @@ class Event(db.Model, DictionaryBase, DBBase, ConvertEvent):
         return cls.query.order_by(-cls.id).first()
 
 
-class Key(db.Model, DictionaryBase, DBBase, ConvertKey):
+class BaseKey(db.Model, InitBase, DBBase):
     """
-    Key model
+    BaseKey model
     """
     __tablename__ = t_name_keys
 
@@ -211,9 +205,9 @@ class Key(db.Model, DictionaryBase, DBBase, ConvertKey):
     language = db.Column(db.String(16))
 
 
-class Setting(db.Model, DictionaryBase, DBBase, ConvertSetting):
+class BaseSetting(db.Model, InitBase, DBBase):
     """
-    Setting model
+    BaseSetting model
     """
     __tablename__ = t_name_settings
 
@@ -224,9 +218,9 @@ class Setting(db.Model, DictionaryBase, DBBase, ConvertSetting):
     db_release = db.Column(db.String(16), nullable=False)
 
 
-class Syllable(db.Model, DictionaryBase, DBBase, ConvertSyllable):
+class BaseSyllable(db.Model, InitBase, DBBase):
     """
-    Syllable model
+    BaseSyllable model
     """
     __tablename__ = t_name_syllables
 
@@ -236,9 +230,9 @@ class Syllable(db.Model, DictionaryBase, DBBase, ConvertSyllable):
     allowed = db.Column(db.Boolean)
 
 
-class Type(db.Model, DictionaryBase, DBBase, ConvertType):
+class BaseType(db.Model, InitBase, DBBase):
     """
-    Type model
+    BaseType model
     """
     __tablename__ = t_name_types
 
@@ -250,9 +244,9 @@ class Type(db.Model, DictionaryBase, DBBase, ConvertType):
     description = db.Column(db.String(255))  # E.g. Two-term Complex, ...
 
 
-class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
+class BaseDefinition(db.Model, InitBase, DBBase):
     """
-    Definition model
+    BaseDefinition model
     """
     __tablename__ = t_name_definitions
 
@@ -270,95 +264,99 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
     APPROVED_CASE_TAGS = ["B", "C", "D", "F", "G", "J", "K", "N", "P", "S", "V", ]
     KEY_PATTERN = r"(?<=\«)(.+?)(?=\»)"
 
-    keys = db.relationship(Key.__name__, secondary=t_connect_keys,
-                           backref="definitions", lazy='dynamic')
+    keys = db.relationship(BaseKey.__name__, secondary=t_connect_keys,
+                           backref="definitions", lazy='dynamic', enable_typechecks=False)
+
+    @property
+    def grammar(self):
+        return f"({self.slots if self.slots else ''}{self.grammar_code if self.grammar_code else ''})"
 
     def link_keys_from_list_of_str(
             self, source: List[str],
-            language: str = None) -> List[Key]:
+            language: str = None) -> List[BaseKey]:
         """
-        Linking a list of vernacular words with Definition
+        Linking a list of vernacular words with BaseDefinition
         Only new words will be linked, skipping those that were previously linked
 
         :param source: List of words on vernacular language
         :param language: Language of source words
-        :return: List of linked Key objects
+        :return: List of linked BaseKey objects
         """
 
         language = language if language else self.language
 
-        new_keys = Key.query.filter(
-            Key.word.in_(source),
-            Key.language == language,
-            ~exists().where(Key.id == self.keys.subquery().c.id),
+        new_keys = BaseKey.query.filter(
+            BaseKey.word.in_(source),
+            BaseKey.language == language,
+            ~exists().where(BaseKey.id == self.keys.subquery().c.id),
         ).all()
 
         self.keys.extend(new_keys)
         return new_keys
 
-    def link_key_from_str(self, word: str, language: str = None) -> Optional[Key]:
+    def link_key_from_str(self, word: str, language: str = None) -> Optional[BaseKey]:
         """
-        Linking vernacular word with Definition object
+        Linking vernacular word with BaseDefinition object
         Only new word will be linked, skipping this that was previously linked
 
-        :param word: Word on vernacular language
-        :param language: Words language
-        :return: Linked Key object or None if it were already linked
+        :param word: BaseWord on vernacular language
+        :param language: BaseWords language
+        :return: Linked BaseKey object or None if it were already linked
         """
         language = language if language else self.language
         result = self.link_keys_from_list_of_str(source=[word, ], language=language)
         return result[0] if result else None
 
-    def link_keys_from_list_of_obj(self, source: List[Key]) -> List[Key]:
+    def link_keys_from_list_of_obj(self, source: List[BaseKey]) -> List[BaseKey]:
         """
-        Linking Key objects with Definition
-        Only new Keys will be linked, skipping those that were previously linked
+        Linking BaseKey objects with BaseDefinition
+        Only new BaseKeys will be linked, skipping those that were previously linked
 
-        :param source: List of Key objects from db
-        :return: List of linked Key objects
+        :param source: List of BaseKey objects from db
+        :return: List of linked BaseKey objects
         """
         new_keys = list(set(source) - set(self.keys))
         self.keys.extend(new_keys)
         return new_keys
 
-    def link_key_from_obj(self, key: Key) -> Optional[Key]:
+    def link_key_from_obj(self, key: BaseKey) -> Optional[BaseKey]:
         """
-        Linking Key object with Definition object
-        It will be skipped if the Key has already been linked before
-        :param key: Key objects from db
-        :return: linked Key object or None if it were already linked
+        Linking BaseKey object with BaseDefinition object
+        It will be skipped if the BaseKey has already been linked before
+        :param key: BaseKey objects from db
+        :return: linked BaseKey object or None if it were already linked
         """
-        if key and not self.keys.filter(Key.id == key.id).count() > 0:
+        if key and not self.keys.filter(BaseKey.id == key.id).count() > 0:
             self.keys.append(key)
             return key
         return None
 
     def link_keys_from_definition_body(
             self, language: str = None,
-            pattern: str = KEY_PATTERN) -> List[Key]:
+            pattern: str = KEY_PATTERN) -> List[BaseKey]:
         """
-        Extract and link keys from Definition's body
-        :param language: Language of Definition's keys
-        :param pattern: Regex pattern for extracting keys from the Definition's body
-        :return: List of linked Key objects
+        Extract and link keys from BaseDefinition's body
+        :param language: Language of BaseDefinition's keys
+        :param pattern: Regex pattern for extracting keys from the BaseDefinition's body
+        :return: List of linked BaseKey objects
         """
         language = language if language else self.language
         keys = re.findall(pattern, self.body)
         return self.link_keys_from_list_of_str(source=keys, language=language)
 
     def link_keys(
-            self, source: Union[List[Key], List[str], Key, str, None] = None,
-            language: str = None, pattern: str = KEY_PATTERN) -> Union[Key, List[Key]]:
+            self, source: Union[List[BaseKey], List[str], BaseKey, str, None] = None,
+            language: str = None, pattern: str = KEY_PATTERN) -> Union[BaseKey, List[BaseKey]]:
         """
-        Universal method for linking all available types of key sources with Definition
+        Universal method for linking all available types of key sources with BaseDefinition
 
-        :param source: Could be a str, Key, List of Keys or str, or None
-        If no source is provided, keys will be extracted from the Definition's body
+        :param source: Could be a str, BaseKey, List of BaseKeys or str, or None
+        If no source is provided, keys will be extracted from the BaseDefinition's body
         If source is a string or a list of strings, the language of the keys must be specified
         TypeError will be raised if the source contains inappropriate data
-        :param language: Language of Definition's keys
-        :param pattern: Regex pattern for extracting keys from the Definition's body
-        :return: None, Key, or List of Keys
+        :param language: Language of BaseDefinition's keys
+        :param pattern: Regex pattern for extracting keys from the BaseDefinition's body
+        :return: None, BaseKey, or List of BaseKeys
         """
 
         language = language if language else self.language
@@ -369,25 +367,25 @@ class Definition(db.Model, DictionaryBase, DBBase, ConvertDefinition):
         if isinstance(source, str):
             return self.link_key_from_str(word=source, language=language)
 
-        if isinstance(source, Key):
+        if isinstance(source, BaseKey):
             return self.link_key_from_obj(key=source)
 
         if isinstance(source, list):
 
-            if all(isinstance(item, Key) for item in source):
+            if all(isinstance(item, BaseKey) for item in source):
                 return self.link_keys_from_list_of_obj(source=source)
 
             if all(isinstance(item, str) for item in source):
                 return self.link_keys_from_list_of_str(source=source, language=language)
 
         raise TypeError("Source for keys should have a string, "
-                        "Key or list of strings or Keys type. "
+                        "BaseKey or list of strings or BaseKeys type. "
                         "You input %s" % type(source))
 
 
-class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
+class BaseWord(db.Model, InitBase, DBBase):
     """
-    Word model
+    BaseWord model
     """
     __tablename__ = t_name_words
 
@@ -396,81 +394,84 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
     name = db.Column(db.String(64), nullable=False)
     origin = db.Column(db.String(128))
     origin_x = db.Column(db.String(64))
-
-    type_id = db.Column("type", db.ForeignKey(f'{t_name_types}.id'), nullable=False)
-    type = db.relationship(Type.__name__, backref="words")
-
-    event_start_id = db.Column("event_start", db.ForeignKey(f'{t_name_events}.id'), nullable=False)
-    event_start = db.relationship(
-        "Event", foreign_keys=[event_start_id], backref="appeared_words")
-
-    event_end_id = db.Column("event_end", db.ForeignKey(f'{t_name_events}.id'))
-    event_end = db.relationship(
-        "Event", foreign_keys=[event_end_id], backref="deprecated_words")
-
     match = db.Column(db.String(8))
     rank = db.Column(db.String(8))
     year = db.Column(db.Date)
     notes = db.Column(db.JSON)
     TID_old = db.Column(db.Integer)  # references
 
-    authors = db.relationship(Author.__name__,
-                              secondary=t_connect_authors,
-                              backref="contribution",
-                              lazy='dynamic')
+    type_id = db.Column("type", db.ForeignKey(f'{t_name_types}.id'), nullable=False)
+    type = db.relationship(
+        BaseType.__name__, backref="words", enable_typechecks=False)
 
-    definitions = db.relationship("Definition", backref="source_word", lazy='dynamic')
+    event_start_id = db.Column("event_start", db.ForeignKey(f'{t_name_events}.id'), nullable=False)
+    event_start = db.relationship(
+        BaseEvent.__name__, foreign_keys=[event_start_id],
+        backref="appeared_words", enable_typechecks=False)
+
+    event_end_id = db.Column("event_end", db.ForeignKey(f'{t_name_events}.id'))
+    event_end = db.relationship(
+        BaseEvent.__name__, foreign_keys=[event_end_id],
+        backref="deprecated_words", enable_typechecks=False)
+
+    authors = db.relationship(
+        BaseAuthor.__name__, secondary=t_connect_authors,
+        backref="contribution", lazy='dynamic', enable_typechecks=False)
+
+    definitions = db.relationship(
+        BaseDefinition.__name__, backref="source_word",
+        lazy='dynamic', enable_typechecks=False)
 
     # word's derivatives
     __derivatives = db.relationship(
-        'Word', secondary=t_connect_words,
+        'BaseWord', secondary=t_connect_words,
         primaryjoin=(t_connect_words.c.parent_id == id),
         secondaryjoin=(t_connect_words.c.child_id == id),
-        backref=db.backref('_parents', lazy='dynamic'),
-        lazy='dynamic')
+        backref=db.backref('_parents', lazy='dynamic', enable_typechecks=False),
+        lazy='dynamic', enable_typechecks=False)
 
-    def __is_parented(self, child: Word) -> bool:
+    def __is_parented(self, child: BaseWord) -> bool:
         """
         Check, if this word is already added as a parent for this 'child'
-        :param child: Word object
+        :param child: BaseWord object
         :return: bool
         """
         return self.__derivatives.filter(t_connect_words.c.child_id == child.id).count() > 0
 
-    def add_child(self, child: Word) -> str:
+    def add_child(self, child: BaseWord) -> str:
         """
         Add derivative for the source word
         Get words from Used In and add relationship in database
-        :param child: Word object
+        :param child: BaseWord object
         :return: None
         """
         if not self.__is_parented(child):
             self.__derivatives.append(child)
         return child.name
 
-    def add_children(self, children: List[Word]):
+    def add_children(self, children: List[BaseWord]):
         """
         Add derivatives for the source word
         Get words from Used In and add relationship in database
-        :param children: List of Word objects
+        :param children: List of BaseWord objects
         :return: None
         """
         new_children = list(set(children) - set(self.__derivatives))
         self.__derivatives.extend(new_children) if new_children else None
 
-    def add_author(self, author: Author) -> str:
+    def add_author(self, author: BaseAuthor) -> str:
         """
-        Connect Author object with Word object
+        Connect Author object with BaseWord object
         :param author: Author object
         :return:
         """
-        if not self.authors.filter(Author.abbreviation == author.abbreviation).count() > 0:
+        if not self.authors.filter(BaseAuthor.abbreviation == author.abbreviation).count() > 0:
             self.authors.append(author)
         return author.abbreviation
 
-    def add_authors(self, authors: List[Author]):
+    def add_authors(self, authors: List[BaseAuthor]):
         """
-        Connect Author objects with Word object
+        Connect Author objects with BaseWord object
         :param authors: List of Author object
         :return:
         """
@@ -478,13 +479,13 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         self.authors.extend(new_authors) if new_authors else None
 
     '''
-    def get_definitions(self) -> List[Definition]:
+    def get_definitions(self) -> List[BaseDefinition]:
         """
         Get all definitions of the word
-        :return: List of Definition objects ordered by Definition.position
+        :return: List of BaseDefinition objects ordered by BaseDefinition.position
         """
-        return Definition.query.filter(Definition.id == self.id)\
-            .order_by(Definition.position.asc()).all()
+        return BaseDefinition.query.filter(BaseDefinition.id == self.id)\
+            .order_by(BaseDefinition.position.asc()).all()
     '''
 
     def query_derivatives(self,
@@ -501,16 +502,16 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         result = self.__derivatives.filter(self.id == t_connect_words.c.parent_id)
 
         if word_type or word_type_x or word_group:
-            result = result.join(Type)
+            result = result.join(BaseType)
 
         if word_type:
-            result = result.filter(Type.type == word_type)
+            result = result.filter(BaseType.type == word_type)
         if word_type_x:
-            result = result.filter(Type.type_x == word_type_x)
+            result = result.filter(BaseType.type_x == word_type_x)
         if word_group:
-            result = result.filter(Type.group == word_group)
+            result = result.filter(BaseType.group == word_group)
 
-        return result.order_by(Word.name.asc())
+        return result.order_by(BaseWord.name.asc())
 
     def query_parents(self) -> BaseQuery:
         """
@@ -535,29 +536,44 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         """
         return self.query_derivatives(word_type="Afx")
 
+    def query_keys(self) -> BaseQuery:
+        """
+        Query for the BaseKeys linked with this BaseWord
+        :return: Query
+        """
+        return BaseKey.query.join(t_connect_keys, BaseDefinition, BaseWord).filter(BaseWord.id == self.id)
+
     @property
-    def parents(self) -> List[Word]:
+    def parents(self) -> List[BaseWord]:
         """
         Get all parents of the Complexes, Little words or Affixes
-        :return: List of Words
+        :return: List of BaseWords
         """
         return self.query_parents().all()
 
     @property
-    def complexes(self) -> List[Word]:
+    def complexes(self) -> List[BaseWord]:
         """
         Get all word's complexes if exist
-        :return: List of Words
+        :return: List of BaseWords
         """
         return self.query_cpx().all()
 
     @property
-    def affixes(self) -> List[Word]:
+    def affixes(self) -> List[BaseWord]:
         """
         Get all word's affixes if exist
-        :return: List of Words
+        :return: List of BaseWords
         """
         return self.query_afx().all()
+
+    @property
+    def keys(self) -> List[BaseKey]:
+        """
+        Get all BaseKey object related to this BaseWord
+        :return: List of BaseKey
+        """
+        return self.query_keys().all()
 
     def get_sources_prim(self):
         """
@@ -593,7 +609,7 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
 
         return list()
 
-    def _get_sources_c_prim(self) -> List[WordSource]:
+    def _get_sources_c_prim(self) -> List[BaseWordSource]:
         """
         :return:
         """
@@ -608,7 +624,7 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
             compatibility = re.search(pattern_source, source)[0]
             c_l = compatibility[:-1].split("/")
             transcription = (re.search(rf"(?!{pattern_source}) .+", source)[0]).strip()
-            word_source = WordSource(**{
+            word_source = BaseWordSource(**{
                 "coincidence": int(c_l[0]),
                 "length": int(c_l[1]),
                 "language": compatibility[-1:],
@@ -617,10 +633,10 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
 
         return word_sources
 
-    def get_sources_cpx(self, as_str: bool = False) -> List[Union[str, Word]]:
+    def get_sources_cpx(self, as_str: bool = False) -> List[Union[str, BaseWord]]:
         """
         Extract source words from self.origin field accordingly
-        :param as_str: Boolean - return Word objects if False else as simple str
+        :param as_str: Boolean - return BaseWord objects if False else as simple str
         :return: List of words from which the self.name was created
 
         Example: 'foldjacea' > ['forli', 'djano', 'cenja']
@@ -642,19 +658,19 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         sources = [
             s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
             for s in sources if s not in ["y", "r"]]
-        return sources if as_str else Word.query.filter(Word.name.in_(sources)).all()
+        return sources if as_str else BaseWord.query.filter(BaseWord.name.in_(sources)).all()
 
     @classmethod
-    def by_event(cls, event_id: Union[Event, int] = None) -> BaseQuery:
+    def by_event(cls, event_id: Union[BaseEvent, int] = None) -> BaseQuery:
         """
         Query filtered by specified Event (latest by default)
         :param event_id: Event object or Event.id (int)
         :return: Query
         """
         if not event_id:
-            event_id = Event.latest().id
+            event_id = BaseEvent.latest().id
 
-        event_id = Event.id if isinstance(event_id, Event) else int(event_id)
+        event_id = BaseEvent.id if isinstance(event_id, BaseEvent) else int(event_id)
 
         return cls.query.filter(cls.event_start_id <= event_id) \
             .filter(or_(cls.event_end_id > event_id, cls.event_end_id.is_(None))) \
@@ -670,28 +686,21 @@ class Word(db.Model, DictionaryBase, DBBase, ConvertWord):
         return cls.query.filter(cls.name == name)
 
     @classmethod
-    def by_key(cls, key: Union[Key, str]) -> BaseQuery:
+    def by_key(cls, key: Union[BaseKey, str]) -> BaseQuery:
         """
         Word.Query filtered by specified key
-        :param key: Key object or str
+        :param key: BaseKey object or str
         :return: Query
         """
-        key = Key.word if isinstance(key, Key) else str(key)
-        return cls.query.join(Definition, t_connect_keys, Key).filter(Key.word == key)
-
-    @property
-    def keys_cloud(self) -> BaseQuery:
-        """
-        Query for the Keys linked with this Word
-        :return: Query
-        """
-        return Key.query.join(t_connect_keys, Definition, Word).filter(Word.id == self.id)
+        key = BaseKey.word if isinstance(key, BaseKey) else str(key)
+        return cls.query.join(BaseDefinition, t_connect_keys, BaseKey).filter(BaseKey.word == key)
 
 
-class WordSource(InitBase):
+class BaseWordSource(InitBase):
     """
-    Word Source from Word.origin for Prims
+    Word Source from BaseWord.origin for Prims
     """
+    __tablename__ = t_name_word_sources
 
     LANGUAGES = {
         "E": "English",
@@ -716,6 +725,6 @@ class WordSource(InitBase):
         return f"{self.coincidence}/{self.length}{self.language} {self.transcription}"
 
 
-class WordSpell(DictionaryBase, ConvertWordSpell):
-    """WordSpell model"""
+class BaseWordSpell(InitBase):
+    """BaseWordSpell model"""
     __tablename__ = t_name_word_spells
