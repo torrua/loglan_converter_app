@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# pylint: disable=E1101; C0103
 
 """
 Models of LOD database
@@ -269,7 +270,9 @@ class BaseDefinition(db.Model, InitBase, DBBase):
 
     @property
     def grammar(self):
-        return f"({self.slots if self.slots else ''}{self.grammar_code if self.grammar_code else ''})"
+        """Return definition's grammar data like (3v) or (2n)"""
+        return f"({self.slots if self.slots else ''}" \
+               f"{self.grammar_code if self.grammar_code else ''})"
 
     def link_keys_from_list_of_str(
             self, source: List[str],
@@ -541,7 +544,8 @@ class BaseWord(db.Model, InitBase, DBBase):
         Query for the BaseKeys linked with this BaseWord
         :return: Query
         """
-        return BaseKey.query.join(t_connect_keys, BaseDefinition, BaseWord).filter(BaseWord.id == self.id)
+        return BaseKey.query.join(
+            t_connect_keys, BaseDefinition, BaseWord).filter(BaseWord.id == self.id)
 
     @property
     def parents(self) -> List[BaseWord]:
