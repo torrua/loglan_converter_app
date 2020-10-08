@@ -96,6 +96,8 @@ def db_link_affixes(words: List[List[str]]) -> None:
     def get_elements_from_str(set_as_str: str, separator: str = " ") -> list:
         return [element.strip() for element in set_as_str.split(separator)]
 
+    all_links_counter = 0
+
     for item in words:
         if not item[3]:
             continue
@@ -108,15 +110,15 @@ def db_link_affixes(words: List[List[str]]) -> None:
             .filter(Word.name.in_(djifoas)) \
             .filter(Type.type == "Afx").all()
 
-        # there may be several parents if these are a language-people-culture primitives
-        primitives = Word.query.join(Type) \
-            .filter(Word.id_old == int(item[0])) \
-            .filter(Type.group == "Prim").all()
+        all_links_counter += len(djifoas_as_object)
 
-        for prim in primitives:
-            prim.add_children(djifoas_as_object)
-            log.debug("%s < %s", prim.name, djifoas)
+        primitive = Word.query.filter(Word.id_old == int(item[0])).first()
+        primitive.add_children(djifoas_as_object)
+        log.debug("%s < %s", primitive.name, djifoas_as_str)
+
     db.session.commit()
+
+    log.info("Total number of links Word < Afx: %s", all_links_counter)
     log.info("Finish to link words with their affixes")
 
 
