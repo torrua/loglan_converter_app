@@ -94,7 +94,7 @@ def prepare_dictionary_e(
     log.debug("Grouping keys by first letter")
     grouped_letters = groupby(all_keys_words, lambda ent: ent[0].upper())
     log.debug("Making dictionary with grouped letters")
-    key_names_grouped_by_letter = {k: sorted(list(g)) for k, g in grouped_letters}
+    key_names_grouped_by_letter = {k: list(g) for k, g in grouped_letters}
 
     log.debug("Making main export dictionary")
     dictionary = {
@@ -132,7 +132,6 @@ def generate_dictionary_file(
     :param lex_event:
     :param timestamp:
     """
-
     if not lex_event:
         lex_event = Event.latest()
 
