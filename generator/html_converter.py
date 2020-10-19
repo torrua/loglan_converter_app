@@ -44,13 +44,14 @@ def prepare_dictionary_l(style: str = DEFAULT_STYLE, lex_event: Event = None):
     log.debug("Making dictionary with grouped letters")
     names_grouped_by_letter = {k: list(g) for k, g in grouped_letters}
 
-    log.debug("Making main export dictionary")
+    log.debug("Making main export dictionary with %s letters" % len(names_grouped_by_letter))
     dictionary = {}
     for letter, names in names_grouped_by_letter.items():
+        log.debug("Current letter: %s" % letter)
         dictionary[letter] = [{
             "name": group_words[name][0].name,
             "meanings": [w.meaning(style=style) for w in group_words[name]]} for name in names]
-    log.info("End Loglan dictionary preparation - %s items totally", len(dictionary))
+    log.info("End Loglan dictionary preparation - %s letters totally", len(dictionary))
     return dictionary
 
 
