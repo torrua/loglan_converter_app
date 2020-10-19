@@ -79,6 +79,25 @@ def check_unintelligible_ccc():
     log.info("Finish checking unintelligible CCC")
 
 
+def get_list_of_lw_with_wrong_linguistic_formula():
+    """All LW should follow the formula (C)V(V).
+    This function collect all LW that does not match it.
+    """
+    type_lw = [t.id for t in Type.query.filter(Type.type.in_(["LW", ])).all()]
+
+    words = Word.by_event().filter(Word.type_id.in_(type_lw)).all()
+    print(len(words))
+    pattern = r"^[bcdfghjklmnprstvz]{0,1}[aoeiu]{1}[aoeiu]{0,1}$"
+
+    for w in words:
+        res = bool(re.match(pattern, w.name.lower()))
+
+        if not res:
+            print(f"{w.id_old} {w.name}, {res}")
+
+    print(len([w for w in words if not bool(re.match(pattern, w.name.lower()))]))
+
+
 if __name__ == "__main__":
     from config.postgres import CLIConfig, app_lod
     with app_lod(CLIConfig).app_context():
