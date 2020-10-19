@@ -5,6 +5,7 @@ Add export() function to db object for returning its text string presentation
 """
 
 from config.postgres.models import Author, Event, Syllable, Setting, Type, Word, Definition
+from config.postgres.model_convert import ConvertWordSpell
 
 
 class ExportAuthor(Author):
@@ -85,7 +86,7 @@ class ExportDefinition(Definition):
                f"@{self.body}@@{self.case_tags if self.case_tags else ''}"
 
 
-class ExportWordSpell(Word):
+class ExportWordSpell(Word, ConvertWordSpell):
     def export(self):
         """
         Prepare Word Spell data for exporting to text file
