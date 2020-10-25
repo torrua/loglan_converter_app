@@ -17,7 +17,7 @@ def get_txt_dataset(source_path: str):
     :return:
     """
     return {model.__name__: download_dictionary_file(
-            url=f"{source_path}{model.import_file_name}", model_name=model.__name__)
+            url=f"{source_path}{model.file_name}", model_name=model.__name__)
             for model in all_models_pg if model.__load_from_file__}
 
 
