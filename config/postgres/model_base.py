@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# pylint: disable=E1101; C0103
+# pylint: disable=E1101, C0103
 
 """
 Models of LOD database
@@ -125,6 +125,27 @@ class BaseType(db.Model, InitBase, DBBase):
     group = db.Column(db.String(16))  # E.g. Cpx, Prim
     parentable = db.Column(db.Boolean, nullable=False)  # E.g. True, False
     description = db.Column(db.String(255))  # E.g. Two-term Complex, ...
+
+    @classmethod
+    def query_by(cls, type_filter: Union[str, List[str]]) -> BaseQuery:
+        """
+        :param type_filter:
+        :return:
+        """
+        type_filter = [type_filter, ] if isinstance(type_filter, str) else type_filter
+
+        return cls.query.filter(or_(
+            cls.type.in_(type_filter), cls.type_x.in_(type_filter), cls.group.in_(type_filter),))
+
+    @classmethod
+    def by(cls, type_filter: Union[str, List[str]],
+           only_first: bool = False) -> Optional[BaseType, List[Optional[BaseType]]]:
+        """
+        :param type_filter:
+        :param only_first:
+        :return:
+        """
+        return cls.query_by(type_filter).first() if only_first else cls.query_by(type_filter).all()
 
 
 class BaseDefinition(db.Model, InitBase, DBBase):
@@ -289,7 +310,8 @@ class BaseWord(db.Model, InitBase, DBBase):
     type = db.relationship(
         BaseType.__name__, backref="words", enable_typechecks=False)
 
-    event_start_id = db.Column("event_start", db.ForeignKey(f'{t_name_events}.id'), nullable=False)
+    event_start_id = db.Column(
+        "event_start", db.ForeignKey(f'{t_name_events}.id'), nullable=False)
     event_start = db.relationship(
         BaseEvent.__name__, foreign_keys=[event_start_id],
         backref="appeared_words", enable_typechecks=False)
@@ -342,7 +364,7 @@ class BaseWord(db.Model, InitBase, DBBase):
         :return: None
         """
         new_children = list(set(children) - set(self.__derivatives))
-        self.__derivatives.extend(new_children) if new_children else None
+        _ = self.__derivatives.extend(new_children) if new_children else None
 
     def add_author(self, author: BaseAuthor) -> str:
         """
@@ -361,17 +383,7 @@ class BaseWord(db.Model, InitBase, DBBase):
         :return:
         """
         new_authors = list(set(authors) - set(self.authors))
-        self.authors.extend(new_authors) if new_authors else None
-
-    '''
-    def get_definitions(self) -> List[BaseDefinition]:
-        """
-        Get all definitions of the word
-        :return: List of BaseDefinition objects ordered by BaseDefinition.position
-        """
-        return BaseDefinition.query.filter(BaseDefinition.id == self.id)\
-            .order_by(BaseDefinition.position.asc()).all()
-    '''
+        _ = self.authors.extend(new_authors) if new_authors else None
 
     def query_derivatives(self,
                           word_type: str = None,
@@ -475,22 +487,7 @@ class BaseWord(db.Model, InitBase, DBBase):
         if prim_type == "C":
             return self._get_sources_c_prim()
 
-        if prim_type == "D":  # TODO
-            return f"{self.name}: {self.origin} < {self.origin_x}"
-
-        if prim_type == "I":  # TODO
-            return f"{self.name}: {self.origin} < {self.origin_x}"
-
-        if prim_type == "L":  # TODO
-            return f"{self.name}: {self.origin} < {self.origin_x}"
-
-        if prim_type == "N":  # TODO
-            return f"{self.name}: {self.origin} < {self.origin_x}"
-
-        if prim_type == "O":  # TODO
-            return f"{self.name}: {self.origin} < {self.origin_x}"
-
-        if prim_type == "S":  # TODO
+        if prim_type in ["D", "I", "L", "N", "O", "S", ]:  # TODO
             return f"{self.name}: {self.origin} < {self.origin_x}"
 
         return list()
@@ -528,8 +525,6 @@ class BaseWord(db.Model, InitBase, DBBase):
         Example: 'foldjacea' > ['forli', 'djano', 'cenja']
         """
 
-        # TODO ADD LW and Cpd
-
         # these prims have switched djifoas like 'flo' for 'folma'
         switch_prims = [
             'canli', 'farfu', 'folma', 'forli', 'kutla', 'marka',
@@ -539,12 +534,49 @@ class BaseWord(db.Model, InitBase, DBBase):
             return []
 
         sources = self.origin.replace("(", "").replace(")", "").replace("/", "")
-        sources = str(sources).split("+")
+        sources = sources.split("+")
         sources = [s for s in sources if s not in ["y", "r", "n"]]
         sources = [
-            s if not (s.endswith("r") or s.endswith("h")) else s[:-1]
+            s if not s.endswith(("r", "h")) else s[:-1]
             for s in sources if s not in ["y", "r"]]
-        return sources if as_str else BaseWord.query.filter(BaseWord.name.in_(sources)).all()
+
+        exclude_type_ids = [t.id for t in BaseType.by(["LW", "Cpd"])]
+        result = BaseWord.query \
+            .filter(BaseWord.name.in_(sources)) \
+            .filter(BaseWord.type_id.notin_(exclude_type_ids)).all()
+
+        if not as_str:
+            return result
+
+        result_as_str = []
+        _ = [result_as_str.append(r) for r in sources if r not in result_as_str]
+        return result_as_str
+
+    def get_sources_cpd(self, as_str: bool = False) -> List[Union[str, BaseWord]]:
+        """
+        Extract source words from self.origin field accordingly
+        :param as_str: Boolean - return BaseWord objects if False else as simple str
+        :return: List of words from which the self.name was created
+        """
+
+        if not self.type.type == "Cpd":
+            return []
+
+        sources = self.origin.replace("(", "").replace(")", "").replace("/", "").replace("-", "")
+        sources = [s.strip() for s in sources.split("+")]
+
+        type_ids = [t.id for t in BaseType.by(["LW", "Cpd"])]
+        result = BaseWord.query.filter(BaseWord.name.in_(sources)) \
+            .filter(BaseWord.type_id.in_(type_ids)).all()
+
+        if not as_str:
+            return result
+
+        result_as_str = []
+
+        _ = [result_as_str.append(r) for r in sources if r not in result_as_str and r]
+
+        return result_as_str
 
     @classmethod
     def by_event(cls, event_id: Union[BaseEvent, int] = None) -> BaseQuery:
@@ -572,8 +604,7 @@ class BaseWord(db.Model, InitBase, DBBase):
         """
         if case_sensitive:
             return cls.query.filter(cls.name == name)
-        else:
-            return cls.query.filter(cls.name.in_([name, name.lower(), name.upper()]))
+        return cls.query.filter(cls.name.in_([name, name.lower(), name.upper()]))
 
     @classmethod
     def by_key(

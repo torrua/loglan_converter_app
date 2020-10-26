@@ -119,8 +119,8 @@ def download_txt_to_import():
         Path(import_path).mkdir(parents=True, exist_ok=True)
 
     files = [
-        f"{IMPORT_DIRECTORY_PATH_REMOTE}{model.import_file_name}" for
-        model in all_models_pg if model.import_file_name]
+        f"{IMPORT_DIRECTORY_PATH_REMOTE}{model.file_name}" for
+        model in all_models_pg if model.file_name]
 
     for file in files:
         download_file(file, import_path)
