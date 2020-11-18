@@ -84,6 +84,7 @@ class BaseKey(db.Model, InitBase, DBBase):
     __tablename__ = t_name_keys
 
     id = db.Column(db.Integer, primary_key=True)
+    # TODO remove unique from word field but add language checking
     word = db.Column(db.String(64), unique=True, nullable=False)
     language = db.Column(db.String(16))
 
@@ -237,6 +238,29 @@ class BaseDefinition(db.Model, InitBase, DBBase):
             return key
         return None
 
+    # TODO
+    '''
+    def link_key_from_obj(self, key: BaseKey, add_new_to_db: bool = True) -> Optional[BaseKey]:
+        """
+        Linking BaseKey object with BaseDefinition object
+        It will be skipped if the BaseKey has already been linked before
+        :param key: BaseKey objects from db
+        :return: linked BaseKey object or None if it were already linked
+        """
+        
+        if not key.id:  # and BaseKey.query.filter(~exists().where(BaseKey.id == self.keys.subquery().c.id)).all():
+            ValueError("A key without an id cannot be added.")
+            # There is no key with id = %s in DB.\n"
+            # "Please add key to DB first or remove ID field from key's data." % key.id)
+        else:
+            key = exist_key
+
+        if key and not self.keys.filter(BaseKey.id == key.id).count() > 0:
+            self.keys.append(key)
+            return key
+        return None
+    '''
+
     def link_keys_from_definition_body(
             self, language: str = None,
             pattern: str = KEY_PATTERN) -> List[BaseKey]:
@@ -352,6 +376,7 @@ class BaseWord(db.Model, InitBase, DBBase):
         :param child: BaseWord object
         :return: None
         """
+        # TODO add check if type of child is allowed to add to this word
         if not self.__is_parented(child):
             self.__derivatives.append(child)
         return child.name
@@ -363,6 +388,7 @@ class BaseWord(db.Model, InitBase, DBBase):
         :param children: List of BaseWord objects
         :return: None
         """
+        # TODO add check if type of child is allowed to add to this word
         new_children = list(set(children) - set(self.__derivatives))
         _ = self.__derivatives.extend(new_children) if new_children else None
 
@@ -469,6 +495,8 @@ class BaseWord(db.Model, InitBase, DBBase):
     def keys(self) -> List[BaseKey]:
         """
         Get all BaseKey object related to this BaseWord
+        Keep in mind that duplicate keys for different definitions
+            will not be added to the final result
         :return: List of BaseKey
         """
         return self.query_keys().all()

@@ -10,3 +10,4 @@ pyodbc
 jinja2
 reverso-api
 pymorphy2
+pytest

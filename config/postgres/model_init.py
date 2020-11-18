@@ -45,6 +45,7 @@ class DBBase:
     updated = db.Column(db.TIMESTAMP, onupdate=db.func.now())
     __table__ = None
     __mapper__ = None
+    id = None
 
     def save(self) -> None:
         """
@@ -79,6 +80,15 @@ class DBBase:
         :return:
         """
         return db.session.query(cls).all()
+
+    @classmethod
+    def get_by_id(cls, cid: int):
+        """
+        Get model object from DB by it's id
+        :param cid: cls id
+        :return:
+        """
+        return db.session.query(cls).filter(cls.id == cid).first()
 
     @classmethod
     def attributes_all(cls) -> Set[str]:
