@@ -25,7 +25,12 @@ DEFAULT_STYLE = os.getenv("DEFAULT_STYLE", "ultra")
 SEPARATOR = "@"
 
 root_pattern = r".*\\"
-root_directory = re.search(root_pattern, sys.executable)[0]
+
+try:
+    root_directory = re.search(root_pattern, sys.executable)[0]
+except TypeError as err:
+    log.warning("Cannot define root directory: %s", err)
+    root_directory = None
 
 
 def create_app(config, database):
