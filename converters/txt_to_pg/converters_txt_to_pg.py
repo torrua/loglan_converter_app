@@ -7,6 +7,7 @@ import ast
 import re
 from datetime import datetime
 from typing import List
+
 from config import log
 from config.postgres.models import Author, Event, Key, Setting, Syllable, Type, Definition, Word
 

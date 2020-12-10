@@ -1,7 +1,5 @@
 #  -*- coding: utf-8 -*-
 
-import sys
-
 try:
     import Tkinter as tk
 except ImportError:
@@ -14,20 +12,23 @@ except ImportError:
     import tkinter.ttk as ttk
     py3 = True
 
-from app import dbc_support, is_db_connected
-from tkinter import PhotoImage, messagebox
 import base64
+from time import time
+from tkinter import PhotoImage, messagebox
+
+from loglan_db import app_lod
+
+from app import dbc_support, is_db_connected
+from config.postgres.models import all_models_pg
+from config.text import IMPORT_DIRECTORY_PATH_REMOTE, \
+    IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
+from config.text.functions import download_file
+from converters.ac_to_pg import convert_ac_to_pg
 from converters.ac_to_txt import convert_ac_to_txt
+from converters.pg_to_ac import convert_pg_to_ac
+from converters.pg_to_txt import convert_pg_to_txt
 from converters.txt_to_ac import convert_txt_to_ac
 from converters.txt_to_pg import convert_txt_to_pg
-from converters.pg_to_txt import convert_pg_to_txt
-from converters.ac_to_pg import convert_ac_to_pg
-from converters.pg_to_ac import convert_pg_to_ac
-
-from config.text import IMPORT_DIRECTORY_PATH_REMOTE, IMPORT_DIRECTORY_PATH_LOCAL, EXPORT_DIRECTORY_PATH_LOCAL
-from config.text.functions import download_file
-from config.postgres.models import all_models_pg
-from config.postgres import app_lod
 
 popup_message_title = 'Loglan Converter'
 msg_success_export = f'Export completed successfully!'
@@ -51,6 +52,11 @@ def app_context():
 
 
 def convert_with_context(function):
+    """
+    Context decorator for Windows GUI app
+    :param function:
+    :return:
+    """
     def wrapper(*args, **kwargs):
         try:
             context = app_context()
@@ -66,53 +72,95 @@ def convert_with_context(function):
 
 
 def get_import_path():
-    import_local_path = dbc_support.import_path.get() if dbc_support.import_path.get() else IMPORT_DIRECTORY_PATH_LOCAL
+    """
+    Gets Import Path value from Windows app field
+    :return:
+    """
+    import_local_path = dbc_support.import_path.get() \
+        if dbc_support.import_path.get() else IMPORT_DIRECTORY_PATH_LOCAL
     return IMPORT_DIRECTORY_PATH_REMOTE if dbc_support.from_git.get() else import_local_path
 
 
 def get_export_path():
-    return dbc_support.export_path.get() if dbc_support.export_path.get() else EXPORT_DIRECTORY_PATH_LOCAL
+    """
+    Gets Export Path value from Windows app field
+    :return:
+    """
+    return dbc_support.export_path.get() \
+        if dbc_support.export_path.get() else EXPORT_DIRECTORY_PATH_LOCAL
 
 
 def button_convert_ac_to_txt():
+    """
+    Runs conversion assigned to button
+    :return:
+    """
     destination = get_export_path()
     convert_ac_to_txt(output_directory=destination)
     messagebox.showinfo(*msg_success)
 
 
 def button_convert_txt_to_ac():
+    """
+    Runs conversion assigned to button
+    :return:
+    """
     source = get_import_path()
     convert_txt_to_ac(source_directory=source)
-    messagebox.showinfo(popup_message_title, f'Export completed successfully from {source}!')
+    messagebox.showinfo(
+        popup_message_title,
+        f'Export completed successfully from {source}!')
 
 
 @convert_with_context
 def button_convert_txt_to_pg():
+    """
+    Runs conversion assigned to button
+    :return:
+    """
     source = get_import_path()
     convert_txt_to_pg(source_directory=source)
-    messagebox.showinfo(popup_message_title, f'Export completed successfully from {source}!')
+    messagebox.showinfo(
+        popup_message_title,
+        f'Export completed successfully from {source}!')
 
 
 @convert_with_context
 def button_convert_ac_to_pg():
+    """
+    Runs conversion assigned to button
+    :return:
+    """
     convert_ac_to_pg()
     messagebox.showinfo(*msg_success)
 
 
 @convert_with_context
 def button_convert_pg_to_ac():
+    """
+    Runs conversion assigned to button
+    :return:
+    """
     convert_pg_to_ac()
     messagebox.showinfo(*msg_success)
 
 
 @convert_with_context
 def button_convert_pg_to_txt():
+    """
+    Runs conversion assigned to button
+    :return:
+    """
     destination = get_export_path()
     convert_pg_to_txt(output_directory=destination)
     messagebox.showinfo(*msg_success)
 
 
 def download_txt_to_import():
+    """
+    Downloads RAW files for import
+    :return:
+    """
     from pathlib import Path
     import_path = dbc_support.import_path.get()
     if import_path:
@@ -127,14 +175,26 @@ def download_txt_to_import():
 
 
 def download_mdb_filled():
+    """
+    Downloads filled mdb file from GitHub repository
+    :return:
+    """
     download_file("https://github.com/torrua/LOD/raw/master/source/LoglanDictionary.mdb")
 
 
 def download_mdb_empty():
+    """
+    Downloads empty mdb file (template) from GitHub repository
+    :return:
+    """
     download_file("https://github.com/torrua/LOD/raw/master/source/LoglanDictionaryTemplate.mdb")
 
 
 def vp_start_gui():
+    """
+    Runs Windows app GUI
+    :return:
+    """
     global val, w, root
     root = tk.Tk()
     icon = 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAABGdBTUEAALGPC/xhBQAAACBjSFJN' \
@@ -162,6 +222,11 @@ def vp_start_gui():
     dbc_support.init(root, top)
 
     def trigger_git_local_import(event):
+        """
+        Defines the source of importing (GitHub/Local)
+        :param event:
+        :return:
+        """
         top.import_path.configure(state="normal") if \
             dbc_support.from_git.get() else top.import_path.configure(state="disable")
 
@@ -177,10 +242,17 @@ def vp_start_gui():
     """
 
     def trigger_pg_buttons_state(event):
+        """
+        Defines the state of PG buttons depending on existence of DB Path value
+        :param event:
+        :return:
+        """
         uri = dbc_support.postgres_uri.get()
 
         if not uri:
-            messagebox.showwarning("No DB URI", "The DB URI field is empty. Please provide the path to the database.")
+            messagebox.showwarning(
+                "No DB URI", "The DB URI field is empty. "
+                             "Please provide the path to the database.")
             return
 
         db_connection = is_db_connected(uri)
@@ -190,7 +262,8 @@ def vp_start_gui():
         top.BPT.configure(state=state)
         top.BTP.configure(state=state)
         if not db_connection:
-            messagebox.showwarning("No Connection", "Failed to connect the database at the provided address.")
+            messagebox.showwarning(
+                "No Connection", "Failed to connect the database at the provided address.")
 
     top.is_from_github.bind('<Button-1>', trigger_git_local_import)
     top.BTC.bind('<ButtonRelease-1>', trigger_pg_buttons_state)
@@ -447,9 +520,6 @@ class MainWindow:
 # Modified by Rozen to remove Tkinter import statements and to receive
 # the font as an argument.
 # ======================================================
-
-from time import time, localtime, strftime
-
 
 class ToolTip(tk.Toplevel):
     """

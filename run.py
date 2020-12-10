@@ -12,15 +12,14 @@ from converters.txt_to_ac import convert_txt_to_ac
 # TODO Check affixes for pred(a,i,o,u,e) - did they added?
 # TODO Research the source of LEA (le+ra)? Should be lera?
 # TODO Add parents to Afx from LW (fo > for) make it parentable
-# https://github.com/rotati/wiki/wiki/Git:-Combine-all-messy-commits-into-one-commit-before-merging-to-Master-branch
 
 TESTS = [6, ]
 
 if __name__ == "__main__":
 
-    from config.postgres import CLIConfig, app_lod
+    from loglan_db import app_lod
 
-    with app_lod(CLIConfig).app_context():
+    with app_lod().app_context():
 
         for SELECTOR in TESTS:
             if SELECTOR == 1:

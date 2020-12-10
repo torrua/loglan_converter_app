@@ -71,7 +71,7 @@ def db_fill_tables(source_path: str, models: list = export_models_ac) -> None:
     ac_session = session()
     for model in models:
         model_name = model.__name__
-        url = f"{source_path}{model.file_name}"
+        url = f"{source_path}{model.import_file_name}"
         data = download_dictionary_file(url, model_name)
         log.info("Start to process %s objects", model_name)
         objects = [model(**model.import_(item)) for item in data]

@@ -3,11 +3,12 @@
 import time
 from datetime import timedelta
 
+from loglan_db import db
+
 from config import log, DEFAULT_LANGUAGE
-from config.postgres import db
 from config.postgres.models import all_models_pg
-from converters import db_get_statistic
 from config.text import IMPORT_DIRECTORY_PATH_LOCAL
+from converters import db_get_statistic
 from converters.txt_to_pg.txt_to_pg_functions_fill import db_fill_tables, get_dataset_for_converters
 from converters.txt_to_pg.txt_to_pg_functions_link import db_link_tables
 

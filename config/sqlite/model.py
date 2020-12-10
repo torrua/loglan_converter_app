@@ -9,7 +9,7 @@ from typing import List
 
 from sqlalchemy.orm import synonym
 
-from config.postgres.models import InitBase, DBBase
+from loglan_db.model_init import InitBase, DBBase
 from config.sqlite import db
 
 T_NAME_KEYS = "keys"

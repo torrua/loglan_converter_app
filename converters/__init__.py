@@ -29,7 +29,3 @@ def db_get_property_info(cls, prop: str):
     print("MAX LENGTH: %s (for '%s')" % (len(maxi), maxi))
     mini = min(objects_str, key=len)
     print("MIN LENGTH: %s (for '%s')" % (len(mini), mini))
-
-
-# EXPORT_PG_DIRECTORY_PATH_LOCAL = os.getenv("EXPORT_DIRECTORY_PATH_LOCAL", f"{root_directory}export\\")
-# LOD_KEY_DEFAULT_LANGUAGE = os.getenv("LOD_KEY_DEFAULT_LANGUAGE", DEFAULT_LANGUAGE)

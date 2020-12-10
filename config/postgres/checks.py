@@ -13,16 +13,18 @@ from config.postgres.models import Syllable, Type, Definition, Word
 
 def check_tag_match(extended_result: bool = False):
     """
-    Determine the discrepancy between the declared tags and those actually specified in the Definition
+    Determine the discrepancy between the declared tags
+    and those actually specified in the Definition
     :param extended_result: If True, returns an expanded dataset instead of a boolean
     :return: Boolean or tuple, depending on the extended_result variable
     """
     definitions = Definition.query.filter(Definition.case_tags != "").all()
-    for df in definitions:
+    for defin in definitions:
 
         pattern_case_tags = f"[{''.join(Definition.APPROVED_CASE_TAGS)}]"
-        list_tags = re.findall(pattern_case_tags, df.case_tags)
-        list_body = [tag for tag in re.findall(r'\w+', df.body) if tag in Definition.APPROVED_CASE_TAGS]
+        list_tags = re.findall(pattern_case_tags, defin.case_tags)
+        list_body = [tag for tag in re.findall(r'\w+', defin.body)
+                     if tag in Definition.APPROVED_CASE_TAGS]
 
         result = list_tags == list_body
 
@@ -31,28 +33,42 @@ def check_tag_match(extended_result: bool = False):
 
         if extended_result:
             # print(df.source_word.name, result, list_tags, list_body)
-            if len(df.source_word.definitions.all()) > 1 and not list_body:
-                second = f"\n\t{df.source_word.definitions[1].grammar} {df.source_word.definitions[1].body}"
+            if len(defin.source_word.definitions.all()) > 1 and not list_body:
+                second = f"\n\t{defin.source_word.definitions[1].grammar}" \
+                         f" {defin.source_word.definitions[1].body}"
             else:
                 second = ""
-            print(f"{df.source_word.name},\n\t{df.grammar} {df.body}{second} >< [{df.case_tags}]\n")
+            print(f"{defin.source_word.name},\n\t{defin.grammar}"
+                  f" {defin.body}{second} >< [{defin.case_tags}]\n")
         else:
-            print(df.source_word.name, result)
+            print(defin.source_word.name, result)
 
 
 def check_sources_primitives():
+    """
+
+    :return:
+    """
     c_type = Type.query.filter(Type.type == "C-Prim").first()
     words = Word.query.filter(Word.type_id == c_type.id).filter(~Word.origin.like("% | %")).all()
-    [print(word.__dict__) for word in words]
+    _ = [print(word.__dict__) for word in words]
 
 
 def check_sources_prim_d():
+    """
+
+    :return:
+    """
     d_type = Type.query.filter(Type.type == "D-Prim").first()
     words = Word.query.filter(Word.type_id == d_type.id).all()
-    [print(word.get_sources_prim()) for word in words]
+    _ = [print(word.get_sources_prim()) for word in words]
 
 
 def check_complex_sources():
+    """
+
+    :return:
+    """
     log.info("Start checking sources of Cpxes")
     cpx_type_ids = [t.id for t in Type.query.filter(Type.group == "Cpx").all()]
     words = Word.query.filter(Word.type_id.in_(cpx_type_ids)).all()
@@ -60,22 +76,28 @@ def check_complex_sources():
         log.debug("Checking word: %s", word.name)
         trigger = 0
         sources = word.get_sources_cpx(as_str=True)
-        for s in sources:
-            if not Word.query.filter(Word.name == s).first():
+        for source in sources:
+            if not Word.query.filter(Word.name == source).first():
                 trigger = 1
-                print(f"Word '{s}' is not in the Dictionary")
+                print(f"Word '{source}' is not in the Dictionary")
         if trigger:
             print(f"{word.id_old} |\t{word.name} |\t{word.origin} |\t{word.origin_x}")
     log.info("Finish checking sources of Cpxes")
 
 
 def check_unintelligible_ccc():
+    """
+
+    :return:
+    """
     log.info("Start checking unintelligible CCC")
 
-    unintelligible_ccc = [s.name for s in Syllable.query.filter(Syllable.type == "UnintelligibleCCC").all()]
+    unintelligible_ccc = [
+        syllable.name for syllable in
+        Syllable.query.filter(Syllable.type == "UnintelligibleCCC").all()]
     ccc_filter = Word.name.like(any_([f"%{ccc}%" for ccc in unintelligible_ccc]))
     words = Word.by_event().filter(ccc_filter).all()
-    [print(word.name) for word in words]
+    _ = [print(word.name) for word in words]
     log.info("Finish checking unintelligible CCC")
 
 
@@ -89,16 +111,18 @@ def get_list_of_lw_with_wrong_linguistic_formula():
     print(len(words))
     pattern = r"^[bcdfghjklmnprstvz]{0,1}[aoeiu]{1}[aoeiu]{0,1}$"
 
-    for w in words:
-        res = bool(re.match(pattern, w.name.lower()))
+    for word in words:
+        res = bool(re.match(pattern, word.name.lower()))
 
         if not res:
-            print(f"{w.id_old} {w.name}, {res}")
+            print(f"{word.id_old} {word.name}, {res}")
 
-    print(len([w for w in words if not bool(re.match(pattern, w.name.lower()))]))
+    print(len([word for word in words if
+               not bool(re.match(pattern, word.name.lower()))]))
 
 
 if __name__ == "__main__":
-    from config.postgres import CLIConfig, app_lod
-    with app_lod(CLIConfig).app_context():
+
+    from loglan_db import app_lod
+    with app_lod().app_context():
         pass

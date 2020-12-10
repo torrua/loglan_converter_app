@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# !/usr/bin/env python3
+# pylint: disable=E1101
 
 """"
 Module for uploading data from Postgres database to text files
@@ -8,11 +8,9 @@ Module for uploading data from Postgres database to text files
 from typing import List
 
 from config import log
+from config.postgres.models import export_models_pg
 from config.text import EXPORT_DIRECTORY_PATH_LOCAL
 from config.text.functions import convert_db_to_txt
-from config.postgres.model_export import export_models_pg
-
-# pylint: disable=E1101
 
 
 def export_pg_model_to_list_of_str(export_model) -> List[str]:

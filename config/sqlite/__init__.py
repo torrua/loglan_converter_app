@@ -8,11 +8,12 @@ Create an application object and database
 
 import os
 from flask_sqlalchemy import SQLAlchemy
-from config import log, create_app
+from config import log
 
 db = SQLAlchemy()
 
 from config.sqlite import model
+from loglan_db import create_app
 
 
 def run_with_context(function):

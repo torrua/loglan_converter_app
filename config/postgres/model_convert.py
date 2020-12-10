@@ -4,7 +4,6 @@ Conversion extensions for basic LOD models
 """
 
 from datetime import datetime
-from sqlalchemy.ext.declarative import declared_attr
 
 
 class ConvertBase:
@@ -14,10 +13,10 @@ class ConvertBase:
     __index_sort_import__ = None
     __index_sort_export__ = None
     __load_from_file__ = True
+    __load_to_file__ = True
     __load_to_db__ = True
     file_name = None
 
-    # @declared_attr
     @classmethod
     def export_file_name(cls) -> str:
         """
@@ -61,7 +60,8 @@ class ConvertKey(ConvertBase):
     __index_sort_import__ = 3
     __index_sort_export__ = 8
     __load_from_file__ = False
-    __load_to_db__ = True
+    __load_to_file__ = False
+
     file_name = "LexEvent.txt"
 
 
@@ -117,5 +117,9 @@ class ConvertWordSpell(ConvertBase):
     __index_sort_import__ = 9
     __index_sort_export__ = 7
     file_name = "WordSpell.txt"
-    __load_from_file__ = True
     __load_to_db__ = False
+
+
+all_models_convert = sorted(
+    ConvertBase.__subclasses__(),
+    key=lambda model: model.__index_sort_import__)

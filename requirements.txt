@@ -4,10 +4,8 @@ sqlalchemy
 psycopg2
 requests
 sqlalchemy-access
+flask_sqlalchemy
 pywin32
 pyinstaller
 pyodbc
-jinja2
-reverso-api
-pymorphy2
-pytest
+loglan_db
