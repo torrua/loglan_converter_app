@@ -31,7 +31,7 @@ from converters.txt_to_ac import convert_txt_to_ac
 from converters.txt_to_pg import convert_txt_to_pg
 
 popup_message_title = 'Loglan Converter'
-msg_success_export = f'Export completed successfully!'
+msg_success_export = 'Export completed successfully!'
 msg_success = (popup_message_title, msg_success_export)
 
 
@@ -230,16 +230,6 @@ def vp_start_gui():
         top.import_path.configure(state="normal") if \
             dbc_support.from_git.get() else top.import_path.configure(state="disable")
 
-    """
-    def trigger_pg_buttons_state(event):
-        uri = dbc_support.postgres_uri.get()
-        state = "disable" if not uri else "normal"
-
-        top.BAP.configure(state=state)
-        top.BPA.configure(state=state)
-        top.BPT.configure(state=state)
-        top.BTP.configure(state=state)
-    """
 
     def trigger_pg_buttons_state(event):
         """
