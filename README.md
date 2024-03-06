@@ -1,5 +1,5 @@
 > [!CAUTION]
-> Loi, logli! This application and repository are no longer supported. To convert [loglan dictionary data](https://github.com/torrua/LOD) into different formats, please use the [Loglan Database Converter CLI Tool](https://github.com/torrua/loglan_convert).
+> Loi, logli! This application and repository are no longer supported. To convert [loglan dictionary data](https://github.com/torrua/LOD) into different formats, please use the [Loglan Database Converter CLI Tool](https://github.com/torrua/loglan_converter).
 
 
 # Loglan ♻️ Converter
