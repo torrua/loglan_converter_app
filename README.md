@@ -1,3 +1,7 @@
+> [!CAUTION]
+> Loi, logli! This application and repository are no longer supported. To convert [loglan dictionary data](https://github.com/torrua/LOD) into different formats, please use the [Loglan Database Converter CLI Tool](https://github.com/torrua/loglan_convert).
+
+
 # Loglan ♻️ Converter
 ## Description
 The **Loglan Converter** project allows you to import Loglan dictionary from text files into a databases, and vice versa - export from an Access (*.mdb file) or remote database back to text files or even directly move from db to another. 
